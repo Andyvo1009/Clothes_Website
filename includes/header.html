@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VPF Fashion - Thời trang Việt Nam</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> -->
+    <link rel="stylesheet" href="/FirstWebsite/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
 <body>
@@ -14,28 +14,102 @@
     <header>
         <div class="header-container">
             <div class="logo">
-
+                <a href="/FirstWebsite/index.php">
+                    <h1 style="color: #c62828; font-size: 1.8rem;">VPF FASHION</h1>
+                </a>
             </div>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="index.php" class="active">Home</a></li>
+                    <li><a href="/FirstWebsite/index.php" class="active">Home</a></li>
                     <li><a href="#">Đồ Nam</a></li>
                     <li><a href="#">Đồ Nữ</a></li>
                     <li><a href="#">Đồ Bé Trai</a></li>
                     <li><a href="#">Đồ Bé Gái</a></li>
                 </ul>
             </nav>
-            <form class="search-bar" method="get" action="index.php">
+            <form class="search-bar" method="get" action="/FirstWebsite/index.php">
                 <input type="text" name="search" placeholder="Tìm kiếm Tên gì...">
                 <button type="submit" name="submiter">Tìm kiếm</button>
             </form>
             <div class="user-actions">
-                <a href="auth/register.php" class="icon-link"><img src="assets/images/user-svgrepo-com.svg" alt="User Icon" width="30" height="30"></a>
-                <a href="#" class="icon-link"><i class="fas fa-envelope"></i></a>
+                <a href="/FirstWebsite/auth/register.php" class="icon-link"><i class="fas fa-user"></i></a>
+                <a href="/FirstWebsite/admin/products.php" class="icon-link" title="Admin Panel"><i class="fas fa-cog"></i></a>
                 <a href="#" class="icon-link"><i class="fas fa-heart"></i></a>
-                <a href="#" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+                <a href="/FirstWebsite/cart/index.php" class="icon-link cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </a>
             </div>
         </div>
     </header>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch cart count
+        fetchCartCount();
+        
+        // Function to fetch cart count
+        function fetchCartCount() {
+            fetch('/FirstWebsite/cart/count.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateCartCount(data.count);
+                    }
+                })
+                .catch(error => console.error('Error fetching cart count:', error));
+        }
+        
+        // Function to update cart count in UI
+        function updateCartCount(count) {
+            const cartCountElement = document.getElementById('cart-count');
+            if (cartCountElement) {
+                cartCountElement.textContent = count;
+                
+                if (count > 0) {
+                    cartCountElement.classList.add('active');
+                } else {
+                    cartCountElement.classList.remove('active');
+                }
+            }
+        }
+        
+        // Custom event listener for cart updates
+        window.addEventListener('cartUpdated', function(e) {
+            if (e.detail && e.detail.count !== undefined) {
+                updateCartCount(e.detail.count);
+            } else {
+                fetchCartCount();
+            }
+        });
+    });
+    </script>
+    
+    <style>
+    .cart-icon {
+        position: relative;
+    }
+    
+    .cart-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: #c62828;
+        color: white;
+        font-size: 0.7rem;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .cart-count.active {
+        opacity: 1;
+    }
+    </style>
 </body>
 </html>

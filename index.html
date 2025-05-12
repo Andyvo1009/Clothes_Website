@@ -25,10 +25,10 @@
             <h2>Danh Mục Sản Phẩm</h2>
         </div>
 
-        <!-- Men's Products -->
+        <?php foreach ($categories as $category => $categoryProducts): ?>
         <div class="category-section">
             <div class="category-header">
-                <h3>Đồ Nam</h3>
+                <h3><?= htmlspecialchars($category) ?></h3>
                 <div class="chat-button">
                     <i class="fas fa-comments"></i>
                     <span>Hỏi đáp</span>
@@ -36,179 +36,59 @@
             </div>
             
             <div class="product-grid">
-                <!-- Product 1 -->
-                <div class="product-card">
-                    <div class="product-badge">Sale</div>
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Men's%20T-shirt" alt="Áo Nam Tay Ngắn">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
+                <?php foreach ($categoryProducts as $product): ?>
+                <a href="product.php?id=<?= $product['id'] ?>" class="product-link">
+                    <div class="product-card">
+                        <?php if ($product['stock'] < 5): ?>
+                        <div class="product-badge">Sale</div>
+                        <?php endif; ?>
+                        <div class="product-image">
+                            <?php if (!empty($product['image']) && file_exists('assets/images/' . $product['image'])): ?>
+                                <img src="assets/images/<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
+                            <?php else: ?>
+                                <?php 
+                                    // Generate a placeholder based on category and product name
+                                    $placeholderText = urlencode($product['name']);
+                                    $bgColor = '';
+                                    $textColor = '555555';
+                                    
+                                    switch($product['category']) {
+                                        case 'Đồ Nam':
+                                            $bgColor = '87CEEB'; // Light blue
+                                            break;
+                                        case 'Đồ Nữ':
+                                            $bgColor = 'FFB6C1'; // Light pink
+                                            break;
+                                        case 'Đồ Bé Trai':
+                                            $bgColor = '90EE90'; // Light green
+                                            break;
+                                        case 'Đồ Bé Gái':
+                                            $bgColor = 'FFFFE0'; // Light yellow
+                                            break;
+                                        default:
+                                            $bgColor = 'DEDEDE'; // Light gray
+                                    }
+                                ?>
+                                <img src="https://placeholder.pics/svg/300x400/<?= $bgColor ?>/<?= $textColor ?>/<?= $placeholderText ?>" alt="<?= htmlspecialchars($product['name']) ?>">
+                            <?php endif; ?>
+                            <button class="wishlist-button"><i class="far fa-heart"></i></button>
+                        </div>
+                        <div class="product-info">
+                            <h4><?= htmlspecialchars($product['name']) ?></h4>
+                            <p class="price">Giá: <?= number_format($product['price'], 0, ',', '.') ?>đ</p>
+                            <?php if (!empty($product['size'])): ?>
+                            <p class="size">Size: <?= htmlspecialchars($product['size']) ?></p>
+                            <?php endif; ?>
+                            <?php if (!empty($product['color'])): ?>
+                            <p class="colors">Màu: <?= htmlspecialchars($product['color']) ?></p>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                    <div class="product-info">
-                        <h4>Áo Nam Tay Ngắn</h4>
-                        <p class="price">Giá: 199.000đ</p>
-                    </div>
-                </div>
-                
-                <!-- Product 2 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Men's%20Sweater" alt="Áo Len Lông Cừu Ức">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Len Lông Cừu Ức</h4>
-                        <p class="price">Giá: 499.000đ</p>
-                    </div>
-                </div>
-                
-                <!-- Product 3 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Men's%20Polo" alt="Áo Len Nam Gile">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Len Nam Gile</h4>
-                        <p class="price">Giá: 399.000đ</p>
-                    </div>
-                </div>
-                
-                <!-- Product 4 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Men's%20Sweater%202" alt="Áo Len Nam">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Len Nam</h4>
-                        <p class="price">Giá: 299.000đ</p>
-                    </div>
-                </div>
+                </a>
+                <?php endforeach; ?>
             </div>
         </div>
-
-        <!-- Women's Products -->
-        <div class="category-section">
-            <div class="category-header">
-                <h3>Đồ Nữ</h3>
-                <div class="chat-button">
-                    <i class="fas fa-comments"></i>
-                    <span>Hỏi đáp</span>
-                </div>
-            </div>
-            
-            <div class="product-grid">
-                <!-- Product 1 -->
-                <div class="product-card">
-                    <div class="product-badge">Sale</div>
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Women's%20Sweater" alt="Áo Tay Dài Nữ">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Tay Dài Nữ</h4>
-                        <p class="price">Giá: 299.000đ</p>
-                    </div>
-                </div>
-                
-                <!-- Product 2 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Women's%20Pink%20Top" alt="Áo Len Cổ Tim">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Len Cổ Tim</h4>
-                        <p class="price">Giá: 399.000đ</p>
-                    </div>
-                </div>
-                
-                <!-- Product 3 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Women's%20Black%20Top" alt="Áo Len Tay Lửng Nữ">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Len Tay Lửng Nữ</h4>
-                        <p class="price">Giá: 299.000đ</p>
-                    </div>
-                </div>
-                
-                <!-- Product 4 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Women's%20Beige%20Top" alt="Áo Len Nữ">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Len Nữ</h4>
-                        <p class="price">Giá: 399.000đ</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Kids Products -->
-        <div class="category-section">
-            <div class="category-header">
-                <h3>Đồ Trẻ Em</h3>
-                <div class="chat-button">
-                    <i class="fas fa-comments"></i>
-                    <span>Hỏi đáp</span>
-                </div>
-            </div>
-            
-            <div class="product-grid">
-                <!-- Product 1 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Boy's%20Sweater" alt="Áo Nam Tay Dài">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Nam Tay Dài</h4>
-                        <p class="price">Giá: 199.000đ</p>
-                    </div>
-                </div>
-                
-                <!-- Product 2 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Girl's%20Top" alt="Áo Nữ Tay Ngắn">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Nữ Tay Ngắn</h4>
-                        <p class="price">Giá: 199.000đ</p>
-                    </div>
-                </div>
-                
-                <!-- Product 3 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Boy's%20Vest" alt="Áo Nam Tay Ngắn">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Nam Tay Ngắn</h4>
-                        <p class="price">Giá: 199.000đ</p>
-                    </div>
-                </div>
-                
-                <!-- Product 4 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placeholder.pics/svg/300x400/DEDEDE/555555/Girl's%20Sweater" alt="Áo Len Nữ Tay Dài">
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4>Áo Len Nữ Tay Dài</h4>
-                        <p class="price">Giá: 199.000đ</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <?php endforeach; ?>
 
         <!-- View More Button -->
         <div class="view-more">
