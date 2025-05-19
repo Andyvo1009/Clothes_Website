@@ -77,7 +77,7 @@ include '../includes/header.html';
     <?php if (empty($cartItems)): ?>
     <div class="empty-cart">
         <p>Giỏ hàng của bạn đang trống.</p>
-        <a href="../index.php" class="button">Tiếp tục mua sắm</a>
+        <a href="../index.php" class="button-keep-shopping">Tiếp tục mua sắm</a>
     </div>
     <?php else: ?>
     <div class="cart-content">
@@ -147,7 +147,7 @@ include '../includes/header.html';
                             <form method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
                                 <input type="hidden" name="action" value="remove">
                                 <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
-                                <button type="submit" class="remove-button">✕</button>
+                                <button type="submit" class="remove-button"><img src="../assets/images/icons8-trash.svg" alt="Xóa" style="width: 20px; height: 20px;"></button>
                             </form>
                         </td>
                     </tr>
@@ -161,7 +161,7 @@ include '../includes/header.html';
                 <input type="hidden" name="action" value="clear">
                 <button type="submit" class="clear-button">Làm trống giỏ hàng</button>
             </form>
-            <a href="../index.php" class="button">Tiếp tục mua sắm</a>
+            <a href="../index.php" class="button-keep-shopping">Tiếp tục mua sắm</a>
         </div>
         
         <div class="cart-summary">
@@ -206,6 +206,9 @@ include '../includes/header.html';
 .empty-cart {
     text-align: center;
     padding: 50px 0;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 50px;
 }
 
 .cart-content {
@@ -275,10 +278,18 @@ include '../includes/header.html';
     border: 1px solid #ddd;
 }
 
-.button {
-    background-color: #333;
+.button-keep-shopping {
+    background-color: #CB0404   ;
+    
     color: #fff;
     border: 1px solid #333;
+    border-radius: 5px;
+    margin-top: 20px;
+    padding: 10px 20px;
+    
+    font-weight: 500;
+    cursor: pointer;
+    
 }
 
 .cart-summary {
