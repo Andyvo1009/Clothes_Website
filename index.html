@@ -21,106 +21,41 @@
     <?php endif; ?>
 
     <!-- Product Categories -->
-    <section class="product-section <?php echo !empty($_GET['search']) ? 'search-mode' : ''; ?>">
-        <?php if (empty($_GET['search'])): ?>
-        <div class="section-header">
-            <h2>Danh Mục Sản Phẩm</h2>
-        </div>
+    <section class="product-section <?php echo !empty($searchQuery) ? 'search-mode' : ''; ?>">
+        <?php if (!empty($searchQuery) || !empty($selectedCategory)): ?>
+            <div class="search-results-header">
+                <?php if (!empty($searchQuery)): ?>
+                    <h2>Kết quả tìm kiếm cho: "<?php echo htmlspecialchars($searchQuery); ?>" (<?php echo $resultCount; ?> sản phẩm)</h2>
+                <?php elseif (!empty($selectedCategory)): ?>
+                    <h2><?php echo htmlspecialchars($selectedCategory); ?> (<?php echo $resultCount; ?> sản phẩm)</h2>
+                <?php endif; ?>
+            </div>
+        <?php else: ?>
+            <div class="section-header">
+                <h2>Danh Mục Sản Phẩm</h2>
+            </div>
         <?php endif; ?>
 
         <?php if (!empty($_GET['category'])): ?>
         <!-- Category Filtered View -->
         <div class="product-grid">
             <?php foreach ($products as $product): ?>
-            <a href="product.php?id=<?= $product['id'] ?>" class="product-link">
-                <div class="product-card">
-                    <?php if ($product['stock'] < 5): ?>
-                    <div class="product-badge">Sale</div>
-                    <?php endif; ?>
-                    <div class="product-image">
-                        <?php if (!empty($product['image']) && file_exists('assets/images/' . $product['image'])): ?>
-                            <img src="assets/images/<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
-                        <?php else: ?>
-                            <?php 
-                                $placeholderText = urlencode($product['name']);
-                                $bgColor = '';
-                                $textColor = '555555';
-                                switch($product['category']) {
-                                    case 'Đồ Nam': $bgColor = '87CEEB'; break;
-                                    case 'Đồ Nữ': $bgColor = 'FFB6C1'; break;
-                                    case 'Đồ Bé Trai': $bgColor = '90EE90'; break;
-                                    case 'Đồ Bé Gái': $bgColor = 'FFFFE0'; break;
-                                    default: $bgColor = 'DEDEDE';
-                                }
-                            ?>
-                            <img src="https://placeholder.pics/svg/300x400/<?= $bgColor ?>/<?= $textColor ?>/<?= $placeholderText ?>" alt="<?= htmlspecialchars($product['name']) ?>">
-                        <?php endif; ?>
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4><?= htmlspecialchars($product['name']) ?></h4>
-                        <p class="price">Giá: <?= number_format($product['price'], 0, ',', '.') ?>đ</p>
-                        <?php if (!empty($product['size'])): ?>
-                        <p class="size">Size: <?= htmlspecialchars($product['size']) ?></p>
-                        <?php endif; ?>
-                        <?php if (!empty($product['color'])): ?>
-                        <p class="colors">Màu: <?= htmlspecialchars($product['color']) ?></p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </a>
+                <?php include 'includes/product_card.php'; ?>
             <?php endforeach; ?>
         </div>
         <?php elseif (!empty($_GET['search'])): ?>
-        <!-- Search Results: Use the same product grid as normal -->
+        <!-- Search Results -->
         <div class="product-grid">
             <?php foreach ($products as $product): ?>
-            <a href="product.php?id=<?= $product['id'] ?>" class="product-link">
-                <div class="product-card">
-                    <?php if ($product['stock'] < 5): ?>
-                    <div class="product-badge">Sale</div>
-                    <?php endif; ?>
-                    <div class="product-image">
-                        <?php if (!empty($product['image']) && file_exists('assets/images/' . $product['image'])): ?>
-                            <img src="assets/images/<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
-                        <?php else: ?>
-                            <?php 
-                                $placeholderText = urlencode($product['name']);
-                                $bgColor = '';
-                                $textColor = '555555';
-                                switch($product['category']) {
-                                    case 'Đồ Nam': $bgColor = '87CEEB'; break;
-                                    case 'Đồ Nữ': $bgColor = 'FFB6C1'; break;
-                                    case 'Đồ Bé Trai': $bgColor = '90EE90'; break;
-                                    case 'Đồ Bé Gái': $bgColor = 'FFFFE0'; break;
-                                    default: $bgColor = 'DEDEDE';
-                                }
-                            ?>
-                            <img src="https://placeholder.pics/svg/300x400/<?= $bgColor ?>/<?= $textColor ?>/<?= $placeholderText ?>" alt="<?= htmlspecialchars($product['name']) ?>">
-                        <?php endif; ?>
-                        <button class="wishlist-button"><i class="far fa-heart"></i></button>
-                    </div>
-                    <div class="product-info">
-                        <h4><?= htmlspecialchars($product['name']) ?></h4>
-                        <p class="price">Giá: <?= number_format($product['price'], 0, ',', '.') ?>đ</p>
-                        <?php if (!empty($product['size'])): ?>
-                        <p class="size">Size: <?= htmlspecialchars($product['size']) ?></p>
-                        <?php endif; ?>
-                        <?php if (!empty($product['color'])): ?>
-                        <p class="colors">Màu: <?= htmlspecialchars($product['color']) ?></p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </a>
+                <?php include 'includes/product_card.php'; ?>
             <?php endforeach; ?>
         </div>
         <?php else: ?>
         <!-- Regular Category Display -->
         <?php foreach ($categories as $category => $categoryProducts): ?>
-        <div class="category-section">
-            <div class="category-header">
+        <div class="category-section">            <div class="category-header">
                 <h3><?= htmlspecialchars($category) ?></h3>
-                <div class="chat-button">
+                <div class="chat-button" onclick="document.querySelector('.chat-trigger').click()">
                     <i class="fas fa-comments"></i>
                     <span>Hỏi đáp</span>
                 </div>
@@ -171,13 +106,12 @@
         <?php endif; ?>
 
         <?php if (empty($_GET['search'])): ?>
-        <!-- View More Button - Only show when not searching -->
-        <div class="view-more">
+        <!-- View More Button - Only show when not searching -->        <div class="view-more">
             <button>Xem Thêm</button>
         </div>
         <?php endif; ?>
     </section>
-
+    <script src="chat/chat.js"></script>
     <!-- Footer -->
     
 </body>
