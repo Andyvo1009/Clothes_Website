@@ -20,25 +20,29 @@ function category_to_slug($name)
 $allCategories = $pdo->query("SELECT DISTINCT category FROM products ORDER BY category")->fetchAll(PDO::FETCH_COLUMN);
 
 // Get search and category filter
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$searchQuery = isset($_GET['search']) ? trim($_GET['search']) : '';
 $categorySlug = isset($_GET['category']) ? trim($_GET['category']) : '';
+
+// Initialize variables for the template
+$selectedCategory = '';
+$categoryName = null;
 
 // Build query
 $query = "SELECT * FROM products";
 $params = [];
 $where = [];
 
-if (!empty($search)) {
+if (!empty($searchQuery)) {
     $where[] = "name LIKE :search";
-    $params[':search'] = '%' . $search . '%';
+    $params[':search'] = '%' . $searchQuery . '%';
 }
 
 if (!empty($categorySlug)) {
     // Find the real category name from slug
-    $categoryName = null;
     foreach ($allCategories as $cat) {
         if (category_to_slug($cat) === $categorySlug) {
             $categoryName = $cat;
+            $selectedCategory = $cat;
             break;
         }
     }
@@ -57,6 +61,9 @@ $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $products = $stmt->fetchAll();
 
+// Count results
+$resultCount = count($products);
+
 // Group products by category (for normal view)
 $categories = [];
 foreach ($products as $product) {
@@ -65,17 +72,6 @@ foreach ($products as $product) {
 
 // Include header
 include("includes/header.html");
-
-// Show search or category results message if searching or filtering
-if (!empty($search)) {
-    echo '<div class="search-results-message">';
-    echo '<h3>Kết quả tìm kiếm cho: "' . htmlspecialchars($search) . '" (' . count($products) . ' sản phẩm)</h3>';
-    echo '</div>';
-} elseif (!empty($categorySlug) && isset($categoryName)) {
-    echo '<div class="search-results-message">';
-    echo '<h3>Danh mục: ' . htmlspecialchars($categoryName) . ' (' . count($products) . ' sản phẩm)</h3>';
-    echo '</div>';
-}
 
 include("index.html");
 

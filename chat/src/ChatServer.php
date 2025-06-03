@@ -66,7 +66,7 @@ class ChatServer implements MessageComponentInterface
             'Shop sẽ hỗ trợ bạn ngay!',
             'Cảm ơn! Chúng tôi sẽ liên hệ lại với bạn.',
             'Xin chào! Bạn cần hỗ trợ gì ạ?',
-            'Hình ảnh rất đẹp! Cảm ơn bạn đã chia sẻ.'
+
         ];
 
         $replyData = [
