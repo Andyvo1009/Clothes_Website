@@ -1,14 +1,18 @@
 .chat-popup {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
     width: 450px;
     max-width: 90vw;
     background: white;
     border-radius: 15px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.15);
     display: none;
-    z-index: 1000;
+    z-index: 9999 !important;
+    transform: none !important;
+    left: auto !important;
+    top: auto !important;
+    margin: 0 !important;
 }
 
 .chat-popup.active {
@@ -177,9 +181,9 @@
 }
 
 .chat-trigger {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
     width: 60px;
     height: 60px;
     background: #4a90e2;
@@ -188,10 +192,56 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 999;
+    z-index: 9998 !important;
+    transform: none !important;
+    left: auto !important;
+    top: auto !important;
+    margin: 0 !important;
 }
 
 .chat-trigger i {
     color: white;
     font-size: 24px;
+}
+
+/* Chat status indicator */
+.chat-status {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    color: white;
+    z-index: 1001;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chat-popup {
+        width: 350px !important;
+        bottom: 90px !important;
+        right: 10px !important;
+    }
+    
+    .chat-trigger {
+        bottom: 20px !important;
+        right: 20px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-popup {
+        width: calc(100vw - 20px) !important;
+        right: 10px !important;
+        left: 10px !important;
+        bottom: 90px !important;
+    }
+    
+    .chat-messages {
+        height: 300px;
+    }
 }
