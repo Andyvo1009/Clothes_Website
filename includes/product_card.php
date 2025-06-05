@@ -1,3 +1,4 @@
+
 <a href="product.php?id=<?= $product['id'] ?>" class="product-link">
     <div class="product-card">
         <?php if ($product['stock'] < 5): ?>
@@ -9,6 +10,7 @@
             <?php else: ?>
                 <?php
                 $placeholderText = urlencode($product['name']);
+
                 $bgColor = '';
                 $textColor = '555555';
                 switch ($product['category']) {
@@ -29,6 +31,7 @@
                 }
                 ?>
                 <img src="https://placeholder.pics/svg/300x400/<?= $bgColor ?>/<?= $textColor ?>/<?= $placeholderText ?>" alt="<?= htmlspecialchars($product['name']) ?>"> <?php endif; ?>
+
         </div>
         <div class="product-info">
             <h4><?= htmlspecialchars($product['name']) ?></h4>

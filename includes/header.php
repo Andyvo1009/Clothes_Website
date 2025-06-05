@@ -3,6 +3,8 @@
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+=======
+
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -14,6 +16,7 @@ if (session_status() == PHP_SESSION_NONE) {
     <link rel="stylesheet" href="/FirstWebsite/assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/FirstWebsite/chat/chat.css">
+
 </head>
 
 <body>
@@ -59,6 +62,7 @@ if (session_status() == PHP_SESSION_NONE) {
                         <i class="fas fa-user-plus"></i>
                     </a> --> <?php endif; ?>
                 <a href="/FirstWebsite/cart/index.php" class="icon-link cart-icon" title="Giỏ hàng">
+
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count" id="cart-count">0</span>
                 </a>
@@ -228,6 +232,7 @@ if (session_status() == PHP_SESSION_NONE) {
     </style>
 
     <script src="/FirstWebsite/chat/chat.js"></script>
+
 </body>
 
 </html>

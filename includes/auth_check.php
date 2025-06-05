@@ -1,4 +1,5 @@
 <?php
+
 // auth_check.php - Session management and role-based authorization
 
 if (session_status() == PHP_SESSION_NONE) {
@@ -15,6 +16,7 @@ function isLoggedIn()
 function isAdmin()
 {
     return isLoggedIn() && $_SESSION['role'] === 'admin';
+
 }
 
 function requireLogin()
@@ -60,4 +62,5 @@ function logout()
     setcookie(session_name(), '', time() - 3600, '/');
     header('Location: /FirstWebsite/index.php');
     exit();
+
 }

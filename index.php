@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'includes/db.php';
+require_once 'includes/utils.php';
 
 // Helper: Convert category name to slug
 function category_to_slug($name)
@@ -28,6 +29,13 @@ $selectedCategory = '';
 $categoryName = null;
 
 // Build query
+// Initialize template variables
+$templateVars = [
+    'searchQuery' => $search,
+    'resultCount' => 0,
+    'selectedCategory' => null
+];
+
 $query = "SELECT * FROM products";
 $params = [];
 $where = [];
@@ -42,7 +50,9 @@ if (!empty($categorySlug)) {
     foreach ($allCategories as $cat) {
         if (category_to_slug($cat) === $categorySlug) {
             $categoryName = $cat;
+
             $selectedCategory = $cat;
+
             break;
         }
     }
@@ -61,8 +71,10 @@ $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $products = $stmt->fetchAll();
 
+
 // Count results
 $resultCount = count($products);
+
 
 // Group products by category (for normal view)
 $categories = [];
@@ -70,9 +82,12 @@ foreach ($products as $product) {
     $categories[$product['category']][] = $product;
 }
 
+
 // Include header
 include("includes/header.php");
 
+
+include("includes/header.php");
 include("index.html");
 
 // Include footer

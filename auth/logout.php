@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+
 // Destroy all session data
 session_destroy();
 
@@ -21,3 +22,5 @@ if (ini_get("session.use_cookies")) {
 // Redirect to home page
 header('Location: /FirstWebsite/index.php?message=logged_out');
 exit();
+
+

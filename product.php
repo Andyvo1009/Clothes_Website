@@ -161,7 +161,9 @@ include 'includes/header.php';
                     <p class="stock-info"><?= $product['stock'] ?> sản phẩm có sẵn</p>
                 </div>
 
+
                 <div class="form-actions"> <button type="submit" name="add_to_cart" class="add-to-cart-button">
+
                         <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
                     </button>
                 </div>
@@ -231,6 +233,7 @@ include 'includes/header.php';
         margin: 20px auto;
         padding: 0 20px;
     }
+
 
     .message {
         padding: 10px;
@@ -457,4 +460,6 @@ include 'includes/header.php';
     });
 </script>
 
+
 <?php include 'includes/footer.html'; ?>
+

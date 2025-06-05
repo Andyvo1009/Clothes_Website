@@ -33,6 +33,7 @@
             <div class="section-header">
                 <h2>Danh Mục Sản Phẩm</h2>
             </div>
+
         <?php endif; ?>        <?php if (!empty($_GET['category']) || !empty($_GET['search'])): ?>
         <!-- Category Filtered View or Search Results -->
         <div class="product-grid">
@@ -79,6 +80,7 @@
                     <p>Không tìm thấy sản phẩm nào.</p>
                 </div>
             <?php endif; ?>
+
         </div>
         <?php else: ?>        <!-- Regular Category Display -->
         <?php foreach ($categories as $category => $categoryProducts): ?>
