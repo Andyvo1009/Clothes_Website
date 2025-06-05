@@ -15,27 +15,40 @@ $cart_id = $_SESSION['cart_id'];
 
 // Handle form submission (add to cart)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
-    $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
-    $size = isset($_POST['size']) ? trim($_POST['size']) : null;
-    $color = isset($_POST['color']) ? trim($_POST['color']) : null;
+    // Check if user is logged in
+    if (!isset($_SESSION['user_id'])) {
+        $message = 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.';
+        $messageType = 'error';
 
-    if ($quantity <= 0) {
-        $quantity = 1;
-    }
-
-    if (addToCart($pdo, $cart_id, $product_id, $quantity, $size, $color)) {
-        $message = 'Sản phẩm đã được thêm vào giỏ hàng.';
-        $messageType = 'success';
-
-        // Trigger cart count update
+        // Redirect to login page after a short delay
         echo "<script>
-            window.dispatchEvent(new CustomEvent('cartUpdated', { 
-                detail: { count: " . getCartSummary($pdo, $cart_id)['count'] . " } 
-            }));
+            setTimeout(function() {
+                window.location.href = '/FirstWebsite/auth/login.php';
+            }, 2000);
         </script>";
     } else {
-        $message = 'Không thể thêm sản phẩm vào giỏ hàng.';
-        $messageType = 'error';
+        $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
+        $size = isset($_POST['size']) ? trim($_POST['size']) : null;
+        $color = isset($_POST['color']) ? trim($_POST['color']) : null;
+
+        if ($quantity <= 0) {
+            $quantity = 1;
+        }
+
+        if (addToCart($pdo, $cart_id, $product_id, $quantity, $size, $color)) {
+            $message = 'Sản phẩm đã được thêm vào giỏ hàng.';
+            $messageType = 'success';
+
+            // Trigger cart count update
+            echo "<script>
+                window.dispatchEvent(new CustomEvent('cartUpdated', { 
+                    detail: { count: " . getCartSummary($pdo, $cart_id)['count'] . " } 
+                }));
+            </script>";
+        } else {
+            $message = 'Không thể thêm sản phẩm vào giỏ hàng.';
+            $messageType = 'error';
+        }
     }
 }
 
@@ -161,9 +174,7 @@ include 'includes/header.php';
                     <p class="stock-info"><?= $product['stock'] ?> sản phẩm có sẵn</p>
                 </div>
 
-
                 <div class="form-actions"> <button type="submit" name="add_to_cart" class="add-to-cart-button">
-
                         <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
                     </button>
                 </div>
@@ -397,6 +408,21 @@ include 'includes/header.php';
         border: none;
         justify-content: center;
         width: 100%;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .add-to-cart-button:hover {
+        background-color: #a01e1e;
+        color: #fff;
+    }
+
+    .add-to-cart-button.login-required {
+        background-color: #2196F3;
+    }
+
+    .add-to-cart-button.login-required:hover {
+        background-color: #1976D2;
     }
 
     .product-meta {
@@ -462,4 +488,3 @@ include 'includes/header.php';
 
 
 <?php include 'includes/footer.html'; ?>
-

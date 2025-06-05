@@ -31,7 +31,7 @@ $categoryName = null;
 // Build query
 // Initialize template variables
 $templateVars = [
-    'searchQuery' => $search,
+    'searchQuery' => $searchQuery,
     'resultCount' => 0,
     'selectedCategory' => null
 ];
@@ -83,8 +83,6 @@ foreach ($products as $product) {
 }
 
 
-// Include header
-include("includes/header.php");
 
 
 include("includes/header.php");
