@@ -379,7 +379,9 @@ include 'includes/header.php';
         display: flex;
         gap: 10px;
         margin-top: 20px;
-    }    .add-to-cart-button {
+    }
+
+    .add-to-cart-button {
         padding: 12px 20px;
         border-radius: 4px;
         font-weight: bold;

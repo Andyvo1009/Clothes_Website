@@ -6,6 +6,12 @@ $notification = '';
 $error = '';
 $success = '';
 
+// Check for password reset success message
+if (isset($_SESSION['password_reset_success'])) {
+    $success = $_SESSION['password_reset_success'];
+    unset($_SESSION['password_reset_success']);
+}
+
 // If already logged in, redirect to appropriate page
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] === 'admin') {
@@ -18,12 +24,6 @@ if (isset($_SESSION['user_id'])) {
 
 // Handle redirect parameter
 $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '/FirstWebsite/index.php';
-
-// Check for password reset success message
-if (isset($_SESSION['password_reset_success'])) {
-    $success = $_SESSION['password_reset_success'];
-    unset($_SESSION['password_reset_success']);
-}
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
