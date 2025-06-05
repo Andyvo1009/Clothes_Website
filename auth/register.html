@@ -135,13 +135,15 @@
 <body>
   <button class="back-button" onclick="window.location.href='../index.php'">Back</button>
   <div class="register-container">
-    <h2>Create Account</h2>
-    <form method="POST" action="register.php">
+    <h2>Create Account</h2>    <form method="POST" action="register.php">
       <label for="username">Email</label>
       <input type="text" id="username" name="username" required />
 
       <label for="password">Password</label>
       <input type="password" id="password" name="password" required />
+      
+      <label for="confirm_password">Confirm Password</label>
+      <input type="password" id="confirm_password" name="confirm_password" required />
 
       <button type="submit">Register</button>
 

@@ -1,0 +1,233 @@
+<?php
+// Start session if not already started
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+?>
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPF Fashion - Thời trang Việt Nam</title>
+    <link rel="stylesheet" href="/FirstWebsite/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/FirstWebsite/chat/chat.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <a href="/FirstWebsite/index.php">
+                    <h1 style="color: #c62828; font-size: 1.8rem;">VPF FASHION</h1>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="/FirstWebsite/index.php" class="active">Home</a></li>
+                    <li><a href="/FirstWebsite/index.php?category=do-nam">Đồ Nam</a></li>
+                    <li><a href="/FirstWebsite/index.php?category=do-nu">Đồ Nữ</a></li>
+                    <li><a href="/FirstWebsite/index.php?category=do-be-trai">Đồ Bé Trai</a></li>
+                    <li><a href="/FirstWebsite/index.php?category=do-be-gai">Đồ Bé Gái</a></li>
+                </ul>
+            </nav>
+            <form class="search-bar" method="get" action="/FirstWebsite/index.php">
+                <input type="text" name="search" placeholder="Tìm kiếm Tên gì...">
+                <button type="submit" name="submiter">Tìm kiếm</button>
+            </form>
+            <div class="user-actions">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                        <a href="/FirstWebsite/admin/products.php" class="icon-link admin-link" title="Admin Panel">
+                            <i class="fas fa-cog"></i>
+                        </a>
+                    <?php endif; ?>
+                    <span class="user-greeting" style="margin-right: 10px; color: #333; font-weight: 500;">
+                        Xin chào, <?= htmlspecialchars($_SESSION['username']) ?>
+                    </span>
+                    <a href="/FirstWebsite/auth/logout.php" class="icon-link logout-link" title="Đăng xuất">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                <?php else: ?>
+                    <a href="/FirstWebsite/auth/login.php" class="icon-link login-link" title="Đăng nhập">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <!-- <a href="/FirstWebsite/auth/register.php" class="icon-link register-link" title="Đăng ký">
+                        <i class="fas fa-user-plus"></i>
+                    </a> --> <?php endif; ?>
+                <a href="/FirstWebsite/cart/index.php" class="icon-link cart-icon" title="Giỏ hàng">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="chat-trigger">
+        <i class="fas fa-comments"></i>
+    </div>
+
+    <div class="chat-popup">
+        <div class="chat-header">
+            <h3>Hỗ trợ trực tuyến</h3>
+            <button class="close-chat">×</button>
+        </div>
+        <div class="chat-messages"></div>
+        <div class="chat-input">
+            <div class="image-upload">
+                <input type="file" id="imageUpload" accept="image/*">
+                <label for="imageUpload">
+                    <i class="fas fa-image"></i>
+                </label>
+            </div>
+            <div class="input-wrapper">
+                <input type="text" placeholder="Nhắn tin...">
+                <button type="button"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch cart count
+            fetchCartCount();
+
+            // Function to fetch cart count
+            function fetchCartCount() {
+                fetch('/FirstWebsite/cart/count.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            updateCartCount(data.count);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching cart count:', error));
+            }
+
+            // Function to update cart count in UI
+            function updateCartCount(count) {
+                const cartCountElement = document.getElementById('cart-count');
+                if (cartCountElement) {
+                    cartCountElement.textContent = count;
+
+                    if (count > 0) {
+                        cartCountElement.classList.add('active');
+                    } else {
+                        cartCountElement.classList.remove('active');
+                    }
+                }
+            }
+
+            // Custom event listener for cart updates
+            window.addEventListener('cartUpdated', function(e) {
+                if (e.detail && e.detail.count !== undefined) {
+                    updateCartCount(e.detail.count);
+                } else {
+                    fetchCartCount();
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-greeting {
+            font-size: 0.9rem;
+            color: #333;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .icon-link {
+            position: relative;
+            color: #333;
+            text-decoration: none;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .icon-link:hover {
+            background-color: #f5f5f5;
+            color: #c62828;
+        }
+
+        .cart-icon {
+            position: relative;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #c62828;
+            color: white;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .cart-count.active {
+            opacity: 1;
+        }
+
+        /* Specific styling for different icon types */
+        .login-link {
+            color: #4CAF50;
+        }
+
+        .login-link:hover {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .register-link {
+            color: #2196F3;
+        }
+
+        .register-link:hover {
+            background-color: #e3f2fd;
+            color: #1565C0;
+        }
+
+        .logout-link {
+            color: #f44336;
+        }
+
+        .logout-link:hover {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .admin-link {
+            color: #FF9800;
+        }
+
+        .admin-link:hover {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+
+        .wishlist-link:hover {
+            color: #e91e63;
+        }
+    </style>
+
+    <script src="/FirstWebsite/chat/chat.js"></script>
+</body>
+
+</html>

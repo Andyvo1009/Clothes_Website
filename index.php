@@ -71,7 +71,7 @@ foreach ($products as $product) {
 }
 
 // Include header
-include("includes/header.html");
+include("includes/header.php");
 
 include("index.html");
 
