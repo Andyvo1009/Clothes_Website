@@ -1,7 +1,4 @@
-<?php
-// This file expects a $product array with the following keys:
-// id, name, price, stock, image, size, color, category
-?>
+
 <a href="product.php?id=<?= $product['id'] ?>" class="product-link">
     <div class="product-card">
         <?php if ($product['stock'] < 5): ?>
@@ -13,12 +10,28 @@
             <?php else: ?>
                 <?php
                 $placeholderText = urlencode($product['name']);
-                $bgColor = getPlaceholderBgColor($product['category']);
+
+                $bgColor = '';
                 $textColor = '555555';
+                switch ($product['category']) {
+                    case 'Đồ Nam':
+                        $bgColor = '87CEEB';
+                        break;
+                    case 'Đồ Nữ':
+                        $bgColor = 'FFB6C1';
+                        break;
+                    case 'Đồ Bé Trai':
+                        $bgColor = '90EE90';
+                        break;
+                    case 'Đồ Bé Gái':
+                        $bgColor = 'FFFFE0';
+                        break;
+                    default:
+                        $bgColor = 'DEDEDE';
+                }
                 ?>
-                <img src="https://placeholder.pics/svg/300x400/<?= $bgColor ?>/<?= $textColor ?>/<?= $placeholderText ?>" alt="<?= htmlspecialchars($product['name']) ?>">
-            <?php endif; ?>
-            <button class="wishlist-button"><i class="far fa-heart"></i></button>
+                <img src="https://placeholder.pics/svg/300x400/<?= $bgColor ?>/<?= $textColor ?>/<?= $placeholderText ?>" alt="<?= htmlspecialchars($product['name']) ?>"> <?php endif; ?>
+
         </div>
         <div class="product-info">
             <h4><?= htmlspecialchars($product['name']) ?></h4>

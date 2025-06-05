@@ -1,0 +1,17 @@
+{
+    "name": "firstwebsite/chat",
+    "description": "WebSocket chat server for FirstWebsite",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "cboden/ratchet": "^0.4.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Chat\\": "src/"
+        }
+    },
+    "scripts": {
+        "start": "php bin/chat-server.php"
+    }
+}

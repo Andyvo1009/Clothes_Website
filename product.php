@@ -65,7 +65,7 @@ $sizes = !empty($product['size']) ? explode(',', $product['size']) : [];
 $colors = !empty($product['color']) ? explode(',', $product['color']) : [];
 
 // Include header
-include 'includes/header.html';
+include 'includes/header.php';
 ?>
 
 <div class="product-detail-container">
@@ -161,12 +161,10 @@ include 'includes/header.html';
                     <p class="stock-info"><?= $product['stock'] ?> sản phẩm có sẵn</p>
                 </div>
 
-                <div class="form-actions">
-                    <button type="submit" name="add_to_cart" class="add-to-cart-button">
+
+                <div class="form-actions"> <button type="submit" name="add_to_cart" class="add-to-cart-button">
+
                         <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
-                    </button>
-                    <button type="button" class="wishlist-button">
-                        <i class="far fa-heart"></i> Yêu thích
                     </button>
                 </div>
             </form>
@@ -235,6 +233,7 @@ include 'includes/header.html';
         margin: 20px auto;
         padding: 0 20px;
     }
+
 
     .message {
         padding: 10px;
@@ -385,8 +384,7 @@ include 'includes/header.html';
         margin-top: 20px;
     }
 
-    .add-to-cart-button,
-    .wishlist-button {
+    .add-to-cart-button {
         padding: 12px 20px;
         border-radius: 4px;
         font-weight: bold;
@@ -394,22 +392,11 @@ include 'includes/header.html';
         display: flex;
         align-items: center;
         gap: 5px;
-    }
-
-    .add-to-cart-button {
         background-color: #c62828;
         color: #fff;
         border: none;
-        flex: 2;
         justify-content: center;
-    }
-
-    .wishlist-button {
-        background-color: #f5f5f5;
-        color: #333;
-        border: 1px solid #ddd;
-        flex: 1;
-        justify-content: center;
+        width: 100%;
     }
 
     .product-meta {
@@ -473,7 +460,6 @@ include 'includes/header.html';
     });
 </script>
 
-<?php
-include 'includes/header.php';
-include 'includes/footer.html';
-?>
+
+<?php include 'includes/footer.html'; ?>
+
