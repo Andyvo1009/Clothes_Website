@@ -2,6 +2,7 @@
 session_start();
 require_once 'includes/db.php';
 require_once 'cart/functions.php';
+require_once 'includes/discount_functions.php';
 
 $product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $message = '';
@@ -34,15 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
         if ($quantity <= 0) {
             $quantity = 1;
         }
-
-        if (addToCart($pdo, $cart_id, $product_id, $quantity, $size, $color)) {
+        if (addToCart($pdo, $product_id, $quantity, $size, $color)) {
             $message = 'Sản phẩm đã được thêm vào giỏ hàng.';
             $messageType = 'success';
 
             // Trigger cart count update
             echo "<script>
                 window.dispatchEvent(new CustomEvent('cartUpdated', { 
-                    detail: { count: " . getCartSummary($pdo, $cart_id)['count'] . " } 
+                    detail: { count: " . getCartSummary($pdo)['count'] . " } 
                 }));
             </script>";
         } else {
@@ -63,6 +63,41 @@ if (!$product) {
     exit;
 }
 
+// Get product variants (sizes, colors, stock)
+$variantsStmt = $pdo->prepare("
+    SELECT size, color, stock 
+    FROM product_variants 
+    WHERE product_id = ? AND stock > 0 
+    ORDER BY size, color
+");
+$variantsStmt->execute([$product_id]);
+$variants = $variantsStmt->fetchAll();
+
+// Get available sizes and colors
+$availableSizes = [];
+$availableColors = [];
+$totalStock = 0;
+
+foreach ($variants as $variant) {
+    if ($variant['size'] && !in_array($variant['size'], $availableSizes)) {
+        $availableSizes[] = $variant['size'];
+    }
+    if ($variant['color'] && !in_array($variant['color'], $availableColors)) {
+        $availableColors[] = $variant['color'];
+    }
+    $totalStock += $variant['stock'];
+}
+
+// Set product stock to total available stock
+$product['stock'] = $totalStock;
+$product['variants'] = $variants;
+$product['available_sizes'] = $availableSizes;
+$product['available_colors'] = $availableColors;
+
+// Get discount information for this product
+$discountInfo = calculateDiscountedPrice($pdo, $product['id'], $product['price']);
+$product['discount_info'] = $discountInfo;
+
 // Get related products from same category
 $relatedStmt = $pdo->prepare("
     SELECT * FROM products 
@@ -73,9 +108,8 @@ $relatedStmt = $pdo->prepare("
 $relatedStmt->execute([$product['category'], $product_id]);
 $relatedProducts = $relatedStmt->fetchAll();
 
-// Prepare sizes and colors as arrays
-$sizes = !empty($product['size']) ? explode(',', $product['size']) : [];
-$colors = !empty($product['color']) ? explode(',', $product['color']) : [];
+// Add discount information to related products
+$relatedProducts = addDiscountInfoToProducts($pdo, $relatedProducts);
 
 // Include header
 include 'includes/header.php';
@@ -123,9 +157,24 @@ include 'includes/header.php';
         <div class="product-info">
             <h1 class="product-name"><?= htmlspecialchars($product['name']) ?></h1>
             <p class="product-category">Danh mục: <?= htmlspecialchars($product['category']) ?></p>
-
             <div class="product-price">
-                <span class="current-price"><?= number_format($product['price'], 0, ',', '.') ?>đ</span>
+                <?php if (isset($product['discount_info']) && $product['discount_info']['has_discount']): ?>
+                    <div class="price-container">
+                        <span class="original-price"><?= number_format($product['price'], 0, ',', '.') ?>đ</span>
+                        <span class="current-price"><?= number_format($product['discount_info']['discounted_price'], 0, ',', '.') ?>đ</span>
+                        <span class="discount-badge">-<?= round($product['discount_info']['discount_percent']) ?>%</span>
+                    </div>
+                    <?php if (isset($product['discount_info']['discount_info']['name'])): ?>
+                        <div class="discount-name">
+                            <i class="fas fa-tag"></i> <?= htmlspecialchars($product['discount_info']['discount_info']['name']) ?>
+                        </div>
+                    <?php endif; ?>
+                    <div class="savings-info">
+                        Tiết kiệm: <?= number_format($product['discount_info']['discount_amount'], 0, ',', '.') ?>đ
+                    </div>
+                <?php else: ?>
+                    <span class="current-price"><?= number_format($product['price'], 0, ',', '.') ?>đ</span>
+                <?php endif; ?>
             </div>
 
             <?php if (!empty($product['description'])): ?>
@@ -133,14 +182,12 @@ include 'includes/header.php';
                     <h3>Mô tả sản phẩm</h3>
                     <p><?= nl2br(htmlspecialchars($product['description'])) ?></p>
                 </div>
-            <?php endif; ?>
-
-            <form method="post" class="add-to-cart-form">
-                <?php if (!empty($sizes)): ?>
+            <?php endif; ?> <form method="post" class="add-to-cart-form">
+                <?php if (!empty($availableSizes)): ?>
                     <div class="form-group">
                         <label for="size">Kích cỡ:</label>
                         <div class="size-options">
-                            <?php foreach ($sizes as $index => $size): ?>
+                            <?php foreach ($availableSizes as $index => $size): ?>
                                 <div class="size-option">
                                     <input type="radio" name="size" id="size-<?= $index ?>" value="<?= htmlspecialchars(trim($size)) ?>" <?= $index === 0 ? 'checked' : '' ?>>
                                     <label for="size-<?= $index ?>"><?= htmlspecialchars(trim($size)) ?></label>
@@ -150,11 +197,11 @@ include 'includes/header.php';
                     </div>
                 <?php endif; ?>
 
-                <?php if (!empty($colors)): ?>
+                <?php if (!empty($availableColors)): ?>
                     <div class="form-group">
                         <label for="color">Màu sắc:</label>
                         <div class="color-options">
-                            <?php foreach ($colors as $index => $color): ?>
+                            <?php foreach ($availableColors as $index => $color): ?>
                                 <div class="color-option">
                                     <input type="radio" name="color" id="color-<?= $index ?>" value="<?= htmlspecialchars(trim($color)) ?>" <?= $index === 0 ? 'checked' : '' ?>>
                                     <label for="color-<?= $index ?>"><?= htmlspecialchars(trim($color)) ?></label>
@@ -173,10 +220,16 @@ include 'includes/header.php';
                     </div>
                     <p class="stock-info"><?= $product['stock'] ?> sản phẩm có sẵn</p>
                 </div>
-
-                <div class="form-actions"> <button type="submit" name="add_to_cart" class="add-to-cart-button">
-                        <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
-                    </button>
+                <div class="form-actions">
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <button type="submit" name="add_to_cart" class="add-to-cart-button">
+                            <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
+                        </button>
+                    <?php else: ?>
+                        <button type="button" class="login-required-button" onclick="redirectToLogin()">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập để mua hàng
+                        </button>
+                    <?php endif; ?>
                 </div>
             </form>
 
@@ -453,6 +506,29 @@ include 'includes/header.php';
             width: 100%;
         }
     }
+
+    /* Login required button styling */
+    .login-required-button {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        border: none;
+        padding: 15px 25px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .login-required-button:hover {
+        background: linear-gradient(135deg, #45a049, #3d8b40);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+    }
 </style>
 
 <script>
@@ -475,15 +551,19 @@ include 'includes/header.php';
             if (currentValue < maxQuantity) {
                 quantityInput.value = currentValue + 1;
             }
-        });
-
-        // Prevent form submission when clicking quantity buttons
+        }); // Prevent form submission when clicking quantity buttons
         document.querySelectorAll('.quantity-btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
             });
         });
     });
+
+    // Function to redirect to login page
+    function redirectToLogin() {
+        const currentUrl = window.location.href;
+        window.location.href = '/FirstWebsite/auth/login.php?redirect=' + encodeURIComponent(currentUrl);
+    }
 </script>
 
 

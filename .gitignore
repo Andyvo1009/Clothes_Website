@@ -5,6 +5,9 @@ create_products_table.php
 chat/vendor/
 vendor/
 
+
+#sql file
+first_web(3).sql
 # Environment files
 .env
 .env.local

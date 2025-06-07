@@ -3,8 +3,6 @@
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
-
-
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -13,9 +11,8 @@ if (session_status() == PHP_SESSION_NONE) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VPF Fashion - Thời trang Việt Nam</title>
-    <link rel="stylesheet" href="/FirstWebsite/assets/css/style.css">
+    <link rel="stylesheet" href="/FirstWebsite/assets/css/style.css?v=<?= time() ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="/FirstWebsite/chat/chat.css">
 
 </head>
 
@@ -47,6 +44,13 @@ if (session_status() == PHP_SESSION_NONE) {
                         <a href="/FirstWebsite/admin/products.php" class="icon-link admin-link" title="Admin Panel">
                             <i class="fas fa-cog"></i>
                         </a>
+                        <a href="/FirstWebsite/chat/admin.php" class="icon-link chat-link" title="Chat Admin">
+                            <i class="fas fa-comments"></i>
+                        </a>
+                    <?php else: ?>
+                        <a href="/FirstWebsite/chat/client.php" class="icon-link chat-link" title="Hỗ trợ khách hàng">
+                            <i class="fas fa-headset"></i>
+                        </a>
                     <?php endif; ?>
                     <span class="user-greeting" style="margin-right: 10px; color: #333; font-weight: 500;">
                         Xin chào, <?= htmlspecialchars($_SESSION['username']) ?>
@@ -69,30 +73,6 @@ if (session_status() == PHP_SESSION_NONE) {
             </div>
         </div>
     </header>
-
-    <div class="chat-trigger">
-        <i class="fas fa-comments"></i>
-    </div>
-
-    <div class="chat-popup">
-        <div class="chat-header">
-            <h3>Hỗ trợ trực tuyến</h3>
-            <button class="close-chat">×</button>
-        </div>
-        <div class="chat-messages"></div>
-        <div class="chat-input">
-            <div class="image-upload">
-                <input type="file" id="imageUpload" accept="image/*">
-                <label for="imageUpload">
-                    <i class="fas fa-image"></i>
-                </label>
-            </div>
-            <div class="input-wrapper">
-                <input type="text" placeholder="Nhắn tin...">
-                <button type="button"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -226,12 +206,19 @@ if (session_status() == PHP_SESSION_NONE) {
             color: #e65100;
         }
 
+        .chat-link {
+            color: #4CAF50;
+        }
+
+        .chat-link:hover {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+
         .wishlist-link:hover {
             color: #e91e63;
         }
     </style>
-
-    <script src="/FirstWebsite/chat/chat.js"></script>
 
 </body>
 

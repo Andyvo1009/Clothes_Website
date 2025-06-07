@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once 'includes/db.php';
-require_once 'includes/utils.php';
+require_once 'includes/discount_functions.php';
 
 // Helper: Convert category name to slug
 function category_to_slug($name)
@@ -71,6 +71,17 @@ $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $products = $stmt->fetchAll();
 
+// Add stock information from variants for each product
+foreach ($products as &$product) {
+    $stockStmt = $pdo->prepare("SELECT SUM(stock) as total_stock FROM product_variants WHERE product_id = ?");
+    $stockStmt->execute([$product['id']]);
+    $stockResult = $stockStmt->fetch();
+    $product['stock'] = $stockResult['total_stock'] ?? 0;
+}
+unset($product); // Clean up reference
+
+// Add discount information to products
+$products = addDiscountInfoToProducts($pdo, $products);
 
 // Count results
 $resultCount = count($products);

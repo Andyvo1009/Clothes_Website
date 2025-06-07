@@ -96,7 +96,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Fetch all products for the list
-$stmt = $pdo->query("SELECT * FROM products ORDER BY category, name");
+$stmt = $pdo->query("
+    SELECT p.*, 
+           COALESCE(SUM(pv.stock), 0) as total_stock,
+           COUNT(pv.id) as variant_count
+    FROM products p 
+    LEFT JOIN product_variants pv ON p.id = pv.product_id 
+    GROUP BY p.id 
+    ORDER BY p.category, p.name
+");
 $products = $stmt->fetchAll();
 
 // Get unique categories for the dropdown
@@ -237,7 +245,15 @@ $categories = $pdo->query("SELECT DISTINCT category FROM products ORDER BY categ
     <div class="admin-container">
         <div class="admin-header">
             <h1>Quản lý Sản phẩm</h1>
-            <a href="../index.php" class="button">Quay lại Trang chủ</a>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="discounts.php" class="button" style="background-color: #2196F3;">
+                    <i class="fas fa-percent"></i> Quản lý Khuyến mãi
+                </a>
+                <a href="../chat/admin_box_chat.php" class="button" style="background-color: #4CAF50;">
+                    <i class="fas fa-comments"></i> Chat Admin
+                </a>
+                <a href="../index.php" class="button">Quay lại Trang chủ</a>
+            </div>
         </div>
 
         <?php if (!empty($message)): ?>
@@ -345,7 +361,7 @@ $categories = $pdo->query("SELECT DISTINCT category FROM products ORDER BY categ
                                 <td><?= htmlspecialchars($product['name']) ?></td>
                                 <td><?= htmlspecialchars($product['category']) ?></td>
                                 <td><?= number_format($product['price'], 0, ',', '.') ?></td>
-                                <td><?= htmlspecialchars($product['stock']) ?></td>
+                                <td><?= htmlspecialchars($product['total_stock']) ?> (<?= $product['variant_count'] ?> loại)</td>
                                 <td>
                                     <button type="button" class="button button-edit" onclick="editProduct(<?= htmlspecialchars(json_encode($product)) ?>)">Sửa</button>
                                     <form method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">

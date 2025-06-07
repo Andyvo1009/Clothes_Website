@@ -3,14 +3,14 @@ session_start();
 require_once '../includes/db.php';
 require_once 'functions.php';
 
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header('Location: /FirstWebsite/auth/login.php?redirect=' . urlencode('/FirstWebsite/cart/index.php'));
+    exit;
+}
+
 $message = '';
 $messageType = '';
-
-// Generate or get session ID for cart
-if (!isset($_SESSION['cart_id'])) {
-    $_SESSION['cart_id'] = session_id();
-}
-$cart_id = $_SESSION['cart_id'];
 
 // Handle form actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Clear cart
         if ($_POST['action'] === 'clear') {
-            if (clearCart($pdo, $cart_id)) {
+            if (clearCart($pdo)) {
                 $message = 'Giỏ hàng đã được làm trống.';
                 $messageType = 'success';
             } else {
@@ -56,8 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Get cart items
-$cartItems = getCartItems($pdo, $cart_id);
-$cartSummary = getCartSummary($pdo, $cart_id);
+$cartItems = getCartItems($pdo);
+$cartSummary = getCartSummary($pdo);
 
 // Include header
 include '../includes/header.php';
@@ -129,12 +129,21 @@ include '../includes/header.php';
                                         <?php endif; ?>
                                     </div>
                                     <div class="product-name">
-                                        <a href="../product.php?id=<?= $item['product_id'] ?>"><?= htmlspecialchars($item['name']) ?></a>
+                                        <a href="../product.php?id=<?= $item['id'] ?>"><?= htmlspecialchars($item['name']) ?></a>
                                     </div>
                                 </td>
-                                <td class="price"><?= number_format($item['price'], 0, ',', '.') ?>đ</td>
-                                <td><?= htmlspecialchars($item['size'] ?? '-') ?></td>
-                                <td><?= htmlspecialchars($item['color'] ?? '-') ?></td>
+                                <td class="price">
+                                    <?php if ($item['discount_info']['has_discount']): ?>
+                                        <div class="price-container">
+                                            <span class="original-price"><?= number_format($item['price'], 0, ',', '.') ?>đ</span>
+                                            <span class="discounted-price"><?= number_format($item['discount_info']['discounted_price'], 0, ',', '.') ?>đ</span>
+                                        </div>
+                                    <?php else: ?>
+                                        <?= number_format($item['price'], 0, ',', '.') ?>đ
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars($item['variant_size'] ?? $item['size'] ?? '-') ?></td>
+                                <td><?= htmlspecialchars($item['variant_color'] ?? $item['color'] ?? '-') ?></td>
                                 <td>
                                     <form method="post" class="quantity-form">
                                         <input type="hidden" name="action" value="update">
@@ -142,7 +151,13 @@ include '../includes/header.php';
                                         <input type="number" name="quantity" value="<?= $item['quantity'] ?>" min="1" max="10" onchange="this.form.submit()">
                                     </form>
                                 </td>
-                                <td class="total"><?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?>đ</td>
+                                <td class="total">
+                                    <?php if ($item['discount_info']['has_discount']): ?>
+                                        <?= number_format($item['discount_info']['discounted_price'] * $item['quantity'], 0, ',', '.') ?>đ
+                                    <?php else: ?>
+                                        <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?>đ
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <form method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
                                         <input type="hidden" name="action" value="remove">
@@ -170,6 +185,16 @@ include '../includes/header.php';
                     <span>Số lượng sản phẩm:</span>
                     <span><?= $cartSummary['count'] ?></span>
                 </div>
+                <?php if ($cartSummary['total_savings'] > 0): ?>
+                    <div class="summary-row">
+                        <span>Tổng tiền gốc:</span>
+                        <span><?= number_format($cartSummary['original_total'], 0, ',', '.') ?>đ</span>
+                    </div>
+                    <div class="summary-row savings">
+                        <span>Tiết kiệm:</span>
+                        <span>-<?= number_format($cartSummary['total_savings'], 0, ',', '.') ?>đ</span>
+                    </div>
+                <?php endif; ?>
                 <div class="summary-row">
                     <span>Tổng tiền:</span>
                     <span class="total-price"><?= number_format($cartSummary['total'], 0, ',', '.') ?>đ</span>
