@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chat Widget</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <h1>Test Chat Widget</h1>
+    <p>This page is for testing the chat widget functionality.</p>
+    
+    <!-- Include the chat widget -->
+    <div id="chatWidget" class="chat-widget">
+        <!-- Chat Toggle Button -->
+        <div id="chatToggle" class="chat-toggle">
+            <i class="fas fa-comments"></i>
+            <span id="chatBadge" class="chat-badge" style="display: none;">0</span>
+        </div>
+
+        <!-- Chat Popup -->
+        <div id="chatPopup" class="chat-popup">
+            <div class="chat-popup-header">
+                <div class="chat-popup-title">
+                    <i class="fas fa-headset"></i>
+                    <div>
+                        <h4>Hỗ trợ khách hàng</h4>
+                        <small>VPF Fashion</small>
+                    </div>
+                </div>
+                <div class="chat-popup-controls">
+                    <button id="chatMinimize" class="chat-control-btn">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button id="chatClose" class="chat-control-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-popup-body">
+                <div id="chatMessages" class="chat-popup-messages">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h5>Chào mừng đến VPF Fashion!</h5>
+                        <p>Chúng tôi luôn sẵn sàng hỗ trợ bạn. Hãy để lại tin nhắn và chúng tôi sẽ phản hồi sớm nhất!</p>
+                    </div>
+                </div>
+
+                <div class="chat-popup-input">
+                    <div class="input-group">
+                        <input type="text" id="chatMessageInput" placeholder="Nhập tin nhắn..." maxlength="1000">
+                        <input type="file" id="chatImageInput" accept="image/*" style="display: none;">
+                        <button id="chatImageBtn" class="chat-image-btn" title="Gửi hình ảnh">
+                            <i class="fas fa-image"></i>
+                        </button>
+                        <button id="chatSendBtn" class="chat-send-btn" title="Gửi tin nhắn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="widget.css">
+    <script src="widget.js"></script>
+
+    <script>
+        console.log('Test page loaded');
+        console.log('Chat widget element:', document.getElementById('chatWidget'));
+        console.log('Chat toggle element:', document.getElementById('chatToggle'));
+        console.log('Chat popup element:', document.getElementById('chatPopup'));
+        
+        // Test click event directly
+        document.getElementById('chatToggle').addEventListener('click', function() {
+            console.log('Toggle clicked on test page!');
+        });
+    </script>
+</body>
+</html>
