@@ -101,3 +101,6 @@ include("index.html");
 
 // Include footer
 include("includes/footer.html");
+
+// Include chat popup widget
+// include("chat/popup_chat/widget.php");

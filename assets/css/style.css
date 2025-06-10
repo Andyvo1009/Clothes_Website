@@ -120,6 +120,14 @@ header {
   color: #c62828;
 }
 
+.profile-link {
+  color: #4e54c8 !important;
+}
+
+.profile-link:hover {
+  color: #8f94fb !important;
+}
+
 /* Hero Banner Styles */
 .hero-banner {
   background-image: url('../images/uniqlo-c-fw24.jpg'); 
@@ -763,9 +771,7 @@ footer {
     margin-bottom: 20px;
 }
 
-.continue-shopping-btn {
-    margin-top: 10px;
-}
+
 
 
 

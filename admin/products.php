@@ -20,10 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $brand = trim($_POST['brand']);
         $size = trim($_POST['size']);
         $color = trim($_POST['color']);
-        $product_id = isset($_POST['product_id']) ? (int)$_POST['product_id'] : null;
-
-        // Handle image upload
+        $product_id = isset($_POST['product_id']) ? (int)$_POST['product_id'] : null;        // Handle image upload
         $image = null;
+        $temp_image_path = null;
+
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $upload_dir = '../assets/images/';
 
@@ -32,48 +32,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 mkdir($upload_dir, 0777, true);
             }
 
-            // Generate unique filename
+            // Get file extension
             $file_extension = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-            $image = 'product_' . time() . '_' . rand(1000, 9999) . '.' . $file_extension;
-            $upload_path = $upload_dir . $image;
 
-            // Move uploaded file
-            if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
-                // If editing and there's an existing image, get it
-                if ($_POST['action'] === 'edit' && $product_id) {
-                    $oldImageStmt = $pdo->prepare("SELECT image FROM products WHERE id = ?");
-                    $oldImageStmt->execute([$product_id]);
-                    $oldImage = $oldImageStmt->fetchColumn();
+            // For editing, we can use the product ID immediately
+            if ($_POST['action'] === 'edit' && $product_id) {
+                $image = 'product_' . $product_id . '.' . $file_extension;
+                $upload_path = $upload_dir . $image;
 
-                    // Delete old image if it exists
-                    if ($oldImage && file_exists($upload_dir . $oldImage)) {
-                        unlink($upload_dir . $oldImage);
+                // Delete old image files with the same product ID but different extensions
+                $old_files = glob($upload_dir . 'product_' . $product_id . '.*');
+                foreach ($old_files as $old_file) {
+                    if (file_exists($old_file)) {
+                        unlink($old_file);
                     }
                 }
+
+                // Move uploaded file
+                if (!move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
+                    $message = 'Lỗi khi tải lên hình ảnh.';
+                    $image = null;
+                }
             } else {
-                $message = 'Lỗi khi tải lên hình ảnh.';
-                $image = null;
+                // For new products, upload to temporary location first
+                $temp_filename = 'temp_' . time() . '_' . rand(1000, 9999) . '.' . $file_extension;
+                $temp_image_path = $upload_dir . $temp_filename;
+
+                if (move_uploaded_file($_FILES['image']['tmp_name'], $temp_image_path)) {
+                    $image = $temp_filename; // Store temp filename for now
+                } else {
+                    $message = 'Lỗi khi tải lên hình ảnh.';
+                    $image = null;
+                }
             }
         } elseif ($_POST['action'] === 'edit' && $product_id) {
             // Keep existing image if editing and no new image uploaded
             $stmt = $pdo->prepare("SELECT image FROM products WHERE id = ?");
             $stmt->execute([$product_id]);
             $image = $stmt->fetchColumn();
-        }
-
-        // Add or update product in database
+        }        // Add or update product in database
         if ($_POST['action'] === 'add') {
+            // Insert product first to get the ID
             $stmt = $pdo->prepare("INSERT INTO products (name, category, description, price, image, stock, brand, size, color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$name, $category, $description, $price, $image, $stock, $brand, $size, $color]);
+            $stmt->execute([$name, $category, $description, $price, null, $stock, $brand, $size, $color]); // Set image to null initially
+
+            $new_product_id = $pdo->lastInsertId();
+
+            // Now handle the image with the proper product ID
+            if ($temp_image_path && file_exists($temp_image_path)) {
+                $file_extension = pathinfo($temp_image_path, PATHINFO_EXTENSION);
+                $final_image_name = 'product_' . $new_product_id . '.' . $file_extension;
+                $final_image_path = '../assets/images/' . $final_image_name;
+
+                // Rename the temp file to the proper product name
+                if (rename($temp_image_path, $final_image_path)) {
+                    // Update the product record with the correct image name
+                    $updateStmt = $pdo->prepare("UPDATE products SET image = ? WHERE id = ?");
+                    $updateStmt->execute([$final_image_name, $new_product_id]);
+                    $image = $final_image_name;
+                } else {
+                    // If rename fails, delete the temp file
+                    if (file_exists($temp_image_path)) {
+                        unlink($temp_image_path);
+                    }
+                }
+            }
+
             $message = 'Sản phẩm đã được thêm thành công.';
         } else {
-            $stmt = $pdo->prepare("UPDATE products SET name = ?, category = ?, description = ?, price = ?, image = ?, stock = ?, brand = ?, size = ?, color = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE product_variants SET name = ?, category = ?, description = ?, price = ?, image = ?, stock = ?, brand = ?, size = ?, color = ? WHERE id = ?");
             $stmt->execute([$name, $category, $description, $price, $image, $stock, $brand, $size, $color, $product_id]);
             $message = 'Sản phẩm đã được cập nhật thành công.';
         }
-    }
-
-    // Delete Product
+    }    // Delete Product
     if (isset($_POST['action']) && $_POST['action'] === 'delete' && isset($_POST['product_id'])) {
         $product_id = (int)$_POST['product_id'];
 
@@ -86,9 +117,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
         $stmt->execute([$product_id]);
 
-        // Delete the image file if it exists
-        if ($image && file_exists('../assets/images/' . $image)) {
-            unlink('../assets/images/' . $image);
+        // Delete all image files for this product (in case there are multiple with different extensions)
+        $upload_dir = '../assets/images/product/';
+        $image_files = glob($upload_dir . 'product_' . $product_id . '.*');
+        foreach ($image_files as $image_file) {
+            if (file_exists($image_file)) {
+                unlink($image_file);
+            }
+        }
+
+        // Also delete the specific image file if it exists and follows old naming convention
+        if ($image && file_exists($upload_dir . $image)) {
+            unlink($upload_dir . $image);
         }
 
         $message = 'Sản phẩm đã được xóa thành công.';
@@ -249,7 +289,7 @@ $categories = $pdo->query("SELECT DISTINCT category FROM products ORDER BY categ
                 <a href="discounts.php" class="button" style="background-color: #2196F3;">
                     <i class="fas fa-percent"></i> Quản lý Khuyến mãi
                 </a>
-                <a href="../chat/admin_box_chat.php" class="button" style="background-color: #4CAF50;">
+                <a href="../chat/admin.php" class="button" style="background-color: #4CAF50;">
                     <i class="fas fa-comments"></i> Chat Admin
                 </a>
                 <a href="../index.php" class="button">Quay lại Trang chủ</a>

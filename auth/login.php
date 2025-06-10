@@ -27,18 +27,26 @@ $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '/FirstWebsite/index.
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $username = trim($_POST['username'] ?? '');
+        $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
-        if (empty($username) || empty($password)) {
+        if (empty($email) || empty($password)) {
             $error = 'Vui lòng nhập đầy đủ thông tin';
         } else {
-            $stmt = $pdo->prepare("SELECT id, username, password, role FROM users WHERE username = ?");
-            $stmt->execute([$username]);
+            // Check if input is email or email
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                // Login with email
+                $stmt = $pdo->prepare("SELECT id, email, email, password, role FROM users WHERE email = ?");
+            } else {
+                // Login with email
+                $stmt = $pdo->prepare("SELECT id, email, email, password, role FROM users WHERE email = ?");
+            }
+
+            $stmt->execute([$email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($user && password_verify($password, $user['password'])) {
                 // Login successful
                 $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
+                $_SESSION['email'] = $user['email'];
                 $_SESSION['role'] = $user['role'];
 
                 // Transfer session cart to user cart if exists
@@ -46,9 +54,7 @@ try {
                     require_once '../cart/functions.php';
                     transferSessionCartToUser($pdo, $user['id'], $_SESSION['cart_id']);
                     unset($_SESSION['cart_id']); // Clear session cart ID
-                }
-
-                // Redirect based on role or to requested page
+                }                // Redirect based on role or to requested page
                 if ($user['role'] === 'admin' && strpos($redirect, 'admin') !== false) {
                     header('Location: ' . $redirect);
                 } elseif ($user['role'] === 'admin') {
@@ -58,7 +64,7 @@ try {
                 }
                 exit();
             } else {
-                $error = 'Tên đăng nhập hoặc mật khẩu không đúng';
+                $error = 'Email/Tên đăng nhập hoặc mật khẩu không đúng';
             }
         }
     }

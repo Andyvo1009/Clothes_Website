@@ -557,9 +557,7 @@ include 'includes/header.php';
                 e.preventDefault();
             });
         });
-    });
-
-    // Function to redirect to login page
+    }); // Function to redirect to login page
     function redirectToLogin() {
         const currentUrl = window.location.href;
         window.location.href = '/FirstWebsite/auth/login.php?redirect=' + encodeURIComponent(currentUrl);
@@ -568,3 +566,8 @@ include 'includes/header.php';
 
 
 <?php include 'includes/footer.html'; ?>
+
+<?php
+// Include chat popup widget
+include 'chat/popup_chat/widget.php';
+?>

@@ -45,13 +45,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             case 'send_message':
                 $conversationId = (int)$_POST['conversation_id'];
                 $otherUserId = getOtherUserId($pdo, $conversationId, $userId);
-                $messageId = sendMessage($pdo, $conversationId, $userId, $otherUserId, $_POST['message']);
 
-                echo json_encode([
-                    'success' => true,
-                    'message_id' => $messageId,
-                    'timestamp' => date('Y-m-d H:i:s')
-                ]);
+                // Handle image upload if present
+                $imageFile = null;
+                if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                    $imageFile = $_FILES['image'];
+                    if (empty($_POST['message'])) {
+                        $message = '[Hình ảnh]'; // Default message for image-only messages
+                    } else {
+                        $message = $_POST['message'];
+                    }
+
+                    $result = sendMessageWithImage($pdo, $conversationId, $userId, $otherUserId, $message, $imageFile);
+
+                    echo json_encode([
+                        'success' => true,
+                        'message_id' => $result['message_id'],
+                        'timestamp' => date('Y-m-d H:i:s'),
+                        'image' => $result['image_path']
+                    ]);
+                } else {
+                    $message = $_POST['message'];
+                    $messageId = sendMessage($pdo, $conversationId, $userId, $otherUserId, $message);
+
+                    echo json_encode([
+                        'success' => true,
+                        'message_id' => $messageId,
+                        'timestamp' => date('Y-m-d H:i:s')
+                    ]);
+                }
                 break;
 
             case 'check_new_messages':
@@ -59,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $lastMessageId = isset($_POST['last_message_id']) ? (int)$_POST['last_message_id'] : 0;
 
                 $stmt = $pdo->prepare("
-                    SELECT m.*, u.username as sender_username
+                    SELECT m.*, u.email as sender_email
                     FROM messages m
                     LEFT JOIN users u ON u.id = m.sender_id
                     WHERE m.conversation_id = ? AND m.id > ?
@@ -96,10 +118,25 @@ $conversations = getAdminConversations($pdo, $userId);
     <link rel="stylesheet" href="/FirstWebsite/assets/css/style.css?v=<?= time() ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
         .admin-chat-container {
             display: flex;
             height: 100vh;
+            width: 100vw;
             background: #f8f9fa;
+        }
+
+        background: #f8f9fa;
         }
 
         .conversations-panel {
@@ -141,7 +178,7 @@ $conversations = getAdminConversations($pdo, $userId);
             border-left: 4px solid #c62828;
         }
 
-        .conversation-username {
+        .conversation-email {
             font-weight: bold;
             margin-bottom: 5px;
         }
@@ -251,12 +288,56 @@ $conversations = getAdminConversations($pdo, $userId);
             align-items: center;
         }
 
-        .chat-input input {
+        .chat-input input[type="text"] {
             flex: 1;
             padding: 12px 16px;
             border: 1px solid #ddd;
             border-radius: 25px;
             outline: none;
+        }
+
+        .chat-input input[type="file"] {
+            display: none;
+        }
+
+        .image-upload-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .image-upload-btn:hover {
+            background: #5a6268;
+        }
+
+        .message-image {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .message-image:hover {
+            transform: scale(1.02);
+        }
+
+        .message-bubble.image-message {
+            padding: 4px;
+            background: transparent;
+            border: none;
+        }
+
+        .message.sent .message-bubble.image-message {
+            background: transparent;
         }
 
         .chat-input button {
@@ -297,6 +378,39 @@ $conversations = getAdminConversations($pdo, $userId);
         .back-btn:hover {
             background: rgba(255, 255, 255, 0.3);
         }
+
+        /* Image Modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+        }
+
+        .image-modal img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+
+        .image-modal .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -321,9 +435,9 @@ $conversations = getAdminConversations($pdo, $userId);
                     </div>
                 <?php else: ?>
                     <?php foreach ($conversations as $conv): ?>
-                        <div class="conversation-item" data-id="<?= $conv['id'] ?>" onclick="selectConversation(<?= $conv['id'] ?>, '<?= htmlspecialchars($conv['client_username']) ?>')">
-                            <div class="conversation-username">
-                                <?= htmlspecialchars($conv['client_username']) ?>
+                        <div class="conversation-item" data-id="<?= $conv['id'] ?>" onclick="selectConversation(<?= $conv['id'] ?>, '<?= htmlspecialchars($conv['client_email']) ?>')">
+                            <div class="conversation-email">
+                                <?= htmlspecialchars($conv['client_email']) ?>
                             </div>
                             <?php if ($conv['last_message']): ?>
                                 <div class="conversation-last-message">
@@ -345,7 +459,7 @@ $conversations = getAdminConversations($pdo, $userId);
         <div class="chat-panel">
             <div class="chat-header" id="chatHeader" style="display: none;">
                 <div>
-                    <h3 id="chatWithUsername"></h3>
+                    <h3 id="chatWithemail"></h3>
                     <small>Đang trò chuyện với khách hàng</small>
                 </div>
             </div>
@@ -361,6 +475,10 @@ $conversations = getAdminConversations($pdo, $userId);
 
             <div class="chat-input" id="chatInput" style="display: none;">
                 <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." maxlength="1000">
+                <input type="file" id="imageInput" accept="image/*">
+                <button type="button" class="image-upload-btn" onclick="document.getElementById('imageInput').click()">
+                    <i class="fas fa-image"></i>
+                </button>
                 <button onclick="sendMessage()" id="sendBtn">
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -368,12 +486,18 @@ $conversations = getAdminConversations($pdo, $userId);
         </div>
     </div>
 
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+        <span class="close" onclick="closeImageModal()">&times;</span>
+        <img id="modalImage" src="" alt="Hình ảnh lớn">
+    </div>
+
     <script>
         let currentConversationId = null;
         let lastMessageId = 0;
         let checkMessagesInterval = null;
 
-        function selectConversation(conversationId, username) {
+        function selectConversation(conversationId, email) {
             // Update UI
             document.querySelectorAll('.conversation-item').forEach(item => {
                 item.classList.remove('active');
@@ -389,7 +513,7 @@ $conversations = getAdminConversations($pdo, $userId);
             lastMessageId = 0;
 
             // Update header
-            document.getElementById('chatWithUsername').textContent = username;
+            document.getElementById('chatWithemail').textContent = email;
             document.getElementById('chatHeader').style.display = 'flex';
             document.getElementById('chatInput').style.display = 'flex';
 
@@ -421,7 +545,7 @@ $conversations = getAdminConversations($pdo, $userId);
                         messagesDiv.innerHTML = '';
 
                         data.messages.forEach(msg => {
-                            addMessage(msg.message, msg.sender_id == <?= $userId ?> ? 'sent' : 'received', msg.created_at, msg.sender_username);
+                            addMessage(msg.message, msg.sender_id == <?= $userId ?> ? 'sent' : 'received', msg.created_at, msg.sender_email, msg.image);
                             lastMessageId = Math.max(lastMessageId, msg.id);
                         });
 
@@ -435,26 +559,35 @@ $conversations = getAdminConversations($pdo, $userId);
             if (!currentConversationId) return;
 
             const input = document.getElementById('messageInput');
+            const imageInput = document.getElementById('imageInput');
             const message = input.value.trim();
+            const hasImage = imageInput.files.length > 0;
 
-            if (!message) return;
+            if (!message && !hasImage) return;
 
             const sendBtn = document.getElementById('sendBtn');
             sendBtn.disabled = true;
             input.disabled = true;
 
+            const formData = new FormData();
+            formData.append('action', 'send_message');
+            formData.append('conversation_id', currentConversationId);
+            formData.append('message', message);
+
+            if (hasImage) {
+                formData.append('image', imageInput.files[0]);
+            }
+
             fetch('', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=send_message&conversation_id=${currentConversationId}&message=${encodeURIComponent(message)}`
+                    body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         input.value = '';
-                        addMessage(message, 'sent', data.timestamp, 'Admin');
+                        imageInput.value = '';
+                        addMessage(message || '[Hình ảnh]', 'sent', data.timestamp, 'Admin', data.image);
                         lastMessageId = data.message_id;
                     } else {
                         alert('Lỗi gửi tin nhắn: ' + (data.error || 'Unknown error'));
@@ -471,10 +604,15 @@ $conversations = getAdminConversations($pdo, $userId);
                 });
         }
 
-        function addMessage(text, type, timestamp, senderName) {
+        function addMessage(text, type, timestamp, senderName, imagePath = null) {
             const messagesDiv = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
+
+            // Debug logging
+            if (imagePath) {
+                console.log('Image path received:', imagePath);
+            }
 
             const now = timestamp ? new Date(timestamp) : new Date();
             const timeStr = now.toLocaleDateString('vi-VN') + ' ' +
@@ -483,10 +621,27 @@ $conversations = getAdminConversations($pdo, $userId);
                     minute: '2-digit'
                 });
 
+            let messageContent = '';
+
+            if (imagePath) {
+                // Remove 'uploads/' prefix if it exists since we're adding it in the src
+                const cleanImagePath = imagePath.startsWith('uploads/') ? imagePath.substring(8) : imagePath;
+                messageContent = `
+                    <div class="message-bubble image-message">
+                        <img src="/FirstWebsite/chat/uploads/${cleanImagePath}" alt="Hình ảnh" class="message-image" onclick="openImageModal(this.src)">
+                        ${text && text !== '[Hình ảnh]' ? `<div style="margin-top: 8px; padding: 8px 12px; background: ${type === 'sent' ? '#c62828' : 'white'}; border-radius: 12px; ${type === 'sent' ? 'color: white;' : 'color: #333; border: 1px solid #e0e0e0;'}">${text.replace(/\n/g, '<br>')}</div>` : ''}
+                    </div>
+                `;
+            } else {
+                messageContent = `
+                    <div class="message-bubble">
+                        ${text.replace(/\n/g, '<br>')}
+                    </div>
+                `;
+            }
+
             messageDiv.innerHTML = `
-                <div class="message-bubble">
-                    ${text.replace(/\n/g, '<br>')}
-                </div>
+                ${messageContent}
                 <div class="message-info">
                     <span>${senderName || (type === 'sent' ? 'Admin' : 'Khách hàng')}</span>
                     <span>${timeStr}</span>
@@ -511,7 +666,7 @@ $conversations = getAdminConversations($pdo, $userId);
                 .then(data => {
                     if (data.success && data.messages.length > 0) {
                         data.messages.forEach(msg => {
-                            addMessage(msg.message, msg.sender_id == <?= $userId ?> ? 'sent' : 'received', msg.created_at, msg.sender_username);
+                            addMessage(msg.message, msg.sender_id == <?= $userId ?> ? 'sent' : 'received', msg.created_at, msg.sender_email, msg.image);
                             lastMessageId = Math.max(lastMessageId, msg.id);
                         });
                     }
@@ -525,6 +680,37 @@ $conversations = getAdminConversations($pdo, $userId);
                 sendMessage();
             }
         });
+
+        // Image upload handling
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    alert('Kích thước file không được vượt quá 5MB');
+                    e.target.value = '';
+                    return;
+                }
+
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Chỉ chấp nhận file ảnh (JPEG, PNG, GIF)');
+                    e.target.value = '';
+                    return;
+                }
+            }
+        });
+
+        // Image modal functions
+        function openImageModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
 
         // Refresh conversations every 10 seconds
         setInterval(function() {

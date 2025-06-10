@@ -21,13 +21,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             case 'send_message':
                 $conversationId = getOrCreateConversation($pdo, $userId);
                 $otherUserId = getOtherUserId($pdo, $conversationId, $userId);
-                $messageId = sendMessage($pdo, $conversationId, $userId, $otherUserId, $_POST['message']);
+                $message = $_POST['message'] ?? '';
 
-                echo json_encode([
-                    'success' => true,
-                    'message_id' => $messageId,
-                    'timestamp' => date('Y-m-d H:i:s')
-                ]);
+                // Handle image upload if present
+                $imageFile = null;
+                if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                    $imageFile = $_FILES['image'];
+                    if (empty($message)) {
+                        $message = '[Hình ảnh]'; // Default message for image-only messages
+                    }
+                }
+
+                try {
+                    $result = sendMessageWithImage($pdo, $conversationId, $userId, $otherUserId, $message, $imageFile);
+                    echo json_encode([
+                        'success' => true,
+                        'message_id' => $result['message_id'],
+                        'timestamp' => date('Y-m-d H:i:s'),
+                        'image' => $result['image_path']
+                    ]);
+                } catch (Exception $e) {
+                    echo json_encode([
+                        'success' => false,
+                        'error' => $e->getMessage()
+                    ]);
+                }
                 break;
 
             case 'get_messages':
@@ -95,24 +113,32 @@ try {
     <link rel="stylesheet" href="/FirstWebsite/assets/css/style.css?v=<?= time() ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Override global styles for fullscreen chat */
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
         }
 
         .chat-container {
-            max-width: 900px;
-            margin: 0 auto;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            height: 700px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
         }
 
         .chat-header {
@@ -290,6 +316,7 @@ try {
             display: flex;
             gap: 10px;
             align-items: center;
+            width: 100%;
         }
 
         .chat-input input {
@@ -300,6 +327,9 @@ try {
             outline: none;
             font-size: 1rem;
             transition: all 0.3s ease;
+            min-width: 0;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .chat-input input:focus {
@@ -335,6 +365,44 @@ try {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .chat-input input[type="file"] {
+            display: none;
+        }
+
+        .image-upload-btn {
+            background: linear-gradient(135deg, #666 0%, #555 100%) !important;
+            margin-right: 10px;
+        }
+
+        .image-upload-btn:hover {
+            background: linear-gradient(135deg, #555 0%, #444 100%) !important;
+        }
+
+        .message-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            display: block;
+            margin: 5px 0;
+        }
+
+        .message-image:hover {
+            transform: scale(1.02);
+        }
+
+        .message-bubble.image-message {
+            padding: 4px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .message.sent .message-bubble.image-message {
+            background: transparent !important;
         }
 
         /* Responsive Design */
@@ -422,12 +490,18 @@ try {
                 <div class="welcome-message">
                     <h4><i class="fas fa-heart"></i> Chào mừng bạn đến với dịch vụ hỗ trợ VPF Fashion!</h4>
                     <p>Chúng tôi sẽ trả lời tin nhắn của bạn trong thời gian sớm nhất. Hãy mô tả vấn đề bạn đang gặp phải.</p>
-                </div>
-                <?php foreach ($messages as $message): ?>
+                </div> <?php foreach ($messages as $message): ?>
                     <div class="message <?= $message['sender_id'] == $userId ? 'sent' : 'received' ?>">
-                        <div class="message-bubble">
-                            <?= nl2br(htmlspecialchars($message['message'])) ?>
-                        </div>
+                        <?php if (isset($message['image']) && !empty($message['image'])): ?>
+                            <div class="message-bubble image-message">
+                                <img src="/FirstWebsite/chat/<?= htmlspecialchars($message['image']) ?>" alt="Hình ảnh" class="message-image" onclick="openImageModal(this.src)">
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($message['message'] && $message['message'] !== '[Hình ảnh]'): ?>
+                            <div class="message-bubble">
+                                <?= nl2br(htmlspecialchars($message['message'])) ?>
+                            </div>
+                        <?php endif; ?>
                         <div class="message-time">
                             <?= date('d/m/Y H:i', strtotime($message['created_at'])) ?>
                         </div>
@@ -435,10 +509,13 @@ try {
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
-
         <div class="chat-input">
             <div class="input-wrapper">
                 <input type="text" id="messageInput" placeholder="Nhập tin nhắn của bạn..." maxlength="1000">
+                <input type="file" id="imageInput" accept="image/*">
+                <button onclick="document.getElementById('imageInput').click()" class="image-upload-btn" title="Gửi hình ảnh">
+                    <i class="fas fa-image"></i>
+                </button>
                 <button onclick="sendMessage()" id="sendBtn" title="Gửi tin nhắn">
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -451,26 +528,34 @@ try {
 
         function sendMessage() {
             const input = document.getElementById('messageInput');
+            const imageInput = document.getElementById('imageInput');
             const message = input.value.trim();
+            const imageFile = imageInput.files[0];
 
-            if (!message) return;
+            if (!message && !imageFile) return;
 
             const sendBtn = document.getElementById('sendBtn');
             sendBtn.disabled = true;
             input.disabled = true;
 
+            const formData = new FormData();
+            formData.append('action', 'send_message');
+            formData.append('message', message);
+
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
             fetch('', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=send_message&message=${encodeURIComponent(message)}`
+                    body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         input.value = '';
-                        addMessage(message, 'sent', data.timestamp);
+                        imageInput.value = '';
+                        addMessage(message, 'sent', data.timestamp, data.image);
                         lastMessageId = data.message_id;
                     } else {
                         alert('Lỗi gửi tin nhắn: ' + (data.error || 'Unknown error'));
@@ -487,7 +572,7 @@ try {
                 });
         }
 
-        function addMessage(text, type, timestamp) {
+        function addMessage(text, type, timestamp, imagePath) {
             const messagesDiv = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
@@ -499,15 +584,35 @@ try {
                     minute: '2-digit'
                 });
 
+            let messageContent = '';
+
+            if (imagePath) {
+                messageContent += `
+                    <div class="message-bubble image-message">
+                        <img src="/FirstWebsite/chat/${imagePath}" alt="Hình ảnh" class="message-image" onclick="openImageModal(this.src)">
+                    </div>
+                `;
+            }
+
+            if (text && text !== '[Hình ảnh]') {
+                messageContent += `
+                    <div class="message-bubble">
+                        ${text.replace(/\n/g, '<br>')}
+                    </div>
+                `;
+            }
+
             messageDiv.innerHTML = `
-                <div class="message-bubble">
-                    ${text.replace(/\n/g, '<br>')}
-                </div>
+                ${messageContent}
                 <div class="message-time">${timeStr}</div>
             `;
 
             messagesDiv.appendChild(messageDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function openImageModal(src) {
+            window.open(src, '_blank');
         }
 
         function checkNewMessages() {
@@ -518,11 +623,10 @@ try {
                     },
                     body: `action=check_new_messages&last_message_id=${lastMessageId}`
                 })
-                .then(response => response.json())
-                .then(data => {
+                .then(response => response.json()).then(data => {
                     if (data.success && data.messages.length > 0) {
                         data.messages.forEach(msg => {
-                            addMessage(msg.message, 'received', msg.created_at);
+                            addMessage(msg.message, 'received', msg.created_at, msg.image);
                             lastMessageId = Math.max(lastMessageId, msg.id);
                         });
                     }

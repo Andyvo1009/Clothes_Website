@@ -43,7 +43,7 @@ function getAdminConversations($pdo, $adminId)
 {
     $stmt = $pdo->prepare("
         SELECT c.id, c.user1_id, c.user2_id, c.created_at,
-               u.username as client_username,
+               u.email as client_email,
                (SELECT message FROM messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
                (SELECT created_at FROM messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message_time,
                (SELECT COUNT(*) FROM messages WHERE conversation_id = c.id AND receiver_id = ? AND is_read = 0) as unread_count
@@ -62,7 +62,7 @@ function getConversationMessages($pdo, $conversationId, $userId = null)
     error_log("Getting messages for conversation ID: $conversationId, User ID: $userId");
 
     $stmt = $pdo->prepare("
-        SELECT m.*, u.username as sender_username
+        SELECT m.*, u.email as sender_email
         FROM messages m
         LEFT JOIN users u ON u.id = m.sender_id
         WHERE m.conversation_id = ?
@@ -77,14 +77,109 @@ function getConversationMessages($pdo, $conversationId, $userId = null)
 }
 
 // Send message
-function sendMessage($pdo, $conversationId, $senderId, $receiverId, $message)
+function sendMessage($pdo, $conversationId, $senderId, $receiverId, $message, $imagePath = null)
 {
     $stmt = $pdo->prepare("
-        INSERT INTO messages (conversation_id, sender_id, receiver_id, message) 
-        VALUES (?, ?, ?, ?)
+        INSERT INTO messages (conversation_id, sender_id, receiver_id, message, image) 
+        VALUES (?, ?, ?, ?, ?)
+    ");
+    $stmt->execute([$conversationId, $senderId, $receiverId, $message, $imagePath]);
+    return $pdo->lastInsertId();
+}
+
+// Send message with image (two-step process for custom image path)
+function sendMessageWithImage($pdo, $conversationId, $senderId, $receiverId, $message, $imageFile = null)
+{
+    // First, insert the message without image to get the message ID
+    $stmt = $pdo->prepare("
+        INSERT INTO messages (conversation_id, sender_id, receiver_id, message, image) 
+        VALUES (?, ?, ?, ?, NULL)
     ");
     $stmt->execute([$conversationId, $senderId, $receiverId, $message]);
-    return $pdo->lastInsertId();
+    $messageId = $pdo->lastInsertId();
+
+    $imagePath = null;
+
+    // If there's an image, upload it and update the message
+    if ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) {
+        $imagePath = uploadChatImageWithId($imageFile, $messageId);
+
+        // Update the message with the image path
+        $updateStmt = $pdo->prepare("UPDATE messages SET image = ? WHERE id = ?");
+        $updateStmt->execute([$imagePath, $messageId]);
+    }
+
+    return ['message_id' => $messageId, 'image_path' => $imagePath];
+}
+
+// Handle image upload with message ID
+function uploadChatImageWithId($file, $messageId)
+{
+    $uploadDir = __DIR__ . '/uploads/';
+
+    // Create uploads directory if it doesn't exist
+    if (!file_exists($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+
+    // Validate file
+    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    $maxFileSize = 5 * 1024 * 1024; // 5MB
+
+    if (!in_array($file['type'], $allowedTypes)) {
+        throw new Exception('Chỉ cho phép upload file ảnh (JPEG, PNG, GIF)');
+    }
+
+    if ($file['size'] > $maxFileSize) {
+        throw new Exception('File ảnh quá lớn. Vui lòng chọn file nhỏ hơn 5MB');
+    }
+
+    // Generate filename using message ID
+    $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $fileName = $messageId . '.' . $fileExtension;
+    $filePath = $uploadDir . $fileName;
+
+    // Move uploaded file
+    if (move_uploaded_file($file['tmp_name'], $filePath)) {
+        return 'uploads/' . $fileName; // Return relative path for database
+    } else {
+        throw new Exception('Không thể upload file');
+    }
+}
+
+// Handle image upload
+function uploadChatImage($file)
+{
+    $uploadDir = __DIR__ . '/uploads/';
+
+    // Create uploads directory if it doesn't exist
+    if (!file_exists($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+
+    // Validate file
+    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    $maxFileSize = 5 * 1024 * 1024; // 5MB
+
+    if (!in_array($file['type'], $allowedTypes)) {
+        throw new Exception('Chỉ cho phép upload file ảnh (JPEG, PNG, GIF)');
+    }
+
+    if ($file['size'] > $maxFileSize) {
+        throw new Exception('File ảnh quá lớn. Vui lòng chọn file nhỏ hơn 5MB');
+    }
+
+    // Generate unique filename
+    $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $fileName = 'chat_' . time() . '_' . rand(1000, 9999) . '.' . $fileExtension;
+    $filePath = $uploadDir . $fileName;
+
+    // Move uploaded file
+    if (move_uploaded_file($file['tmp_name'], $filePath)) {
+        return 'uploads/' . $fileName; // Return relative path for database
+    } else {
+        throw new Exception('Không thể upload file');
+    }
 }
 
 // Mark messages as read

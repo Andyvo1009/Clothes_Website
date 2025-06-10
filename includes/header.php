@@ -3,6 +3,28 @@
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+
+// Determine current page and category for active navigation
+$current_page = basename($_SERVER['PHP_SELF']);
+$current_category = $_GET['category'] ?? '';
+$current_search = $_GET['search'] ?? '';
+
+// Function to determine if a nav item should be active
+function isActive($page, $category = '')
+{
+    global $current_page, $current_category, $current_search;
+
+    // If we're searching, no category should be active
+    if (!empty($current_search)) {
+        return false;
+    }
+
+    if ($page === 'home') {
+        return ($current_page === 'index.php' && empty($current_category));
+    }
+
+    return ($current_page === 'index.php' && $current_category === $category);
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -27,11 +49,11 @@ if (session_status() == PHP_SESSION_NONE) {
             </div>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="/FirstWebsite/index.php" class="active">Home</a></li>
-                    <li><a href="/FirstWebsite/index.php?category=do-nam">Đồ Nam</a></li>
-                    <li><a href="/FirstWebsite/index.php?category=do-nu">Đồ Nữ</a></li>
-                    <li><a href="/FirstWebsite/index.php?category=do-be-trai">Đồ Bé Trai</a></li>
-                    <li><a href="/FirstWebsite/index.php?category=do-be-gai">Đồ Bé Gái</a></li>
+                    <li><a href="/FirstWebsite/index.php" class="<?= isActive('home') ? 'active' : '' ?>">Home</a></li>
+                    <li><a href="/FirstWebsite/index.php?category=do-nam" class="<?= isActive('category', 'do-nam') ? 'active' : '' ?>">Đồ Nam</a></li>
+                    <li><a href="/FirstWebsite/index.php?category=do-nu" class="<?= isActive('category', 'do-nu') ? 'active' : '' ?>">Đồ Nữ</a></li>
+                    <li><a href="/FirstWebsite/index.php?category=do-be-trai" class="<?= isActive('category', 'do-be-trai') ? 'active' : '' ?>">Đồ Bé Trai</a></li>
+                    <li><a href="/FirstWebsite/index.php?category=do-be-gai" class="<?= isActive('category', 'do-be-gai') ? 'active' : '' ?>">Đồ Bé Gái</a></li>
                 </ul>
             </nav>
             <form class="search-bar" method="get" action="/FirstWebsite/index.php">
@@ -51,10 +73,12 @@ if (session_status() == PHP_SESSION_NONE) {
                         <a href="/FirstWebsite/chat/client.php" class="icon-link chat-link" title="Hỗ trợ khách hàng">
                             <i class="fas fa-headset"></i>
                         </a>
-                    <?php endif; ?>
-                    <span class="user-greeting" style="margin-right: 10px; color: #333; font-weight: 500;">
-                        Xin chào, <?= htmlspecialchars($_SESSION['username']) ?>
+                    <?php endif; ?> <span class="user-greeting" style="margin-right: 10px; color: #333; font-weight: 500;">
+                        Xin chào, <?= htmlspecialchars($_SESSION['email']) ?>
                     </span>
+                    <a href="/FirstWebsite/profile/index.php" class="icon-link profile-link" title="Hồ sơ cá nhân">
+                        <i class="fas fa-user-circle"></i>
+                    </a>
                     <a href="/FirstWebsite/auth/logout.php" class="icon-link logout-link" title="Đăng xuất">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>

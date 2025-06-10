@@ -32,10 +32,9 @@ function getCartIdentifier()
 function getCartItems($pdo)
 {
     $cartId = getCartIdentifier();
-
     if ($cartId['type'] === 'user') {
         $stmt = $pdo->prepare("
-            SELECT ci.*, p.name, p.price, p.image, p.category, p.brand,
+            SELECT ci.*, p.id as product_id, p.name, p.price, p.image, p.category, p.brand,
                    pv.stock, pv.size as variant_size, pv.color as variant_color
             FROM cart_items ci
             JOIN cart c ON ci.cart_id = c.id
@@ -49,7 +48,7 @@ function getCartItems($pdo)
         // For session-based carts, we'll store session_id as a temporary solution
         // You might want to extend your schema to handle this better
         $stmt = $pdo->prepare("
-            SELECT ci.*, p.name, p.price, p.image, p.category, p.brand,
+            SELECT ci.*, p.id as product_id, p.name, p.price, p.image, p.category, p.brand,
                    pv.stock, pv.size as variant_size, pv.color as variant_color
             FROM cart_items ci
             JOIN cart c ON ci.cart_id = c.id
@@ -61,11 +60,9 @@ function getCartItems($pdo)
         $stmt->execute();
     }
 
-    $cartItems = $stmt->fetchAll();
-
-    // Add discount information to cart items
+    $cartItems = $stmt->fetchAll();    // Add discount information to cart items
     foreach ($cartItems as &$item) {
-        $discountInfo = calculateDiscountedPrice($pdo, $item['id'], $item['price']);
+        $discountInfo = calculateDiscountedPrice($pdo, $item['product_id'], $item['price']);
         $item['discount_info'] = $discountInfo;
         $item['final_price'] = $discountInfo['discounted_price'];
     }

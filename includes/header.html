@@ -37,7 +37,7 @@
                     <?php else: ?>
                         <a href="/FirstWebsite/chat/client.php" class="icon-link" title="Hỗ trợ khách hàng"><i class="fas fa-headset"></i></a>
                     <?php endif; ?>
-                    <span class="user-greeting">Xin chào, <?= htmlspecialchars($_SESSION['username']) ?></span>
+                    <span class="user-greeting">Xin chào, <?= htmlspecialchars($_SESSION['email']) ?></span>
                     <a href="/FirstWebsite/auth/logout.php" class="icon-link" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
                 <?php else: ?>
                     <a href="/FirstWebsite/auth/login.php" class="icon-link" title="Đăng nhập"><i class="fas fa-sign-in-alt"></i></a>

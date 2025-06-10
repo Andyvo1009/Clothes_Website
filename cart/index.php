@@ -79,8 +79,15 @@ include '../includes/header.php';
             <p>Giỏ hàng của bạn đang trống.</p>
             <a href="../index.php" class="button-keep-shopping">Tiếp tục mua sắm</a>
         </div>
-    <?php else: ?>
-        <div class="cart-content">
+    <?php else: ?> <div class="cart-content">
+            <div class="cart-header-actions">
+                <a href="../index.php" class="button-keep-shopping">Tiếp tục mua sắm</a>
+                <form method="post" onsubmit="return confirm('Bạn có chắc chắn muốn làm trống giỏ hàng?');" style="display: inline;">
+                    <input type="hidden" name="action" value="clear">
+                    <button type="submit" class="clear-button">Làm trống giỏ hàng</button>
+                </form>
+            </div>
+
             <div class="cart-items">
                 <table class="cart-table">
                     <thead>
@@ -129,7 +136,7 @@ include '../includes/header.php';
                                         <?php endif; ?>
                                     </div>
                                     <div class="product-name">
-                                        <a href="../product.php?id=<?= $item['id'] ?>"><?= htmlspecialchars($item['name']) ?></a>
+                                        <a href="../product.php?id=<?= $item['product_id'] ?>"><?= htmlspecialchars($item['name']) ?></a>
                                     </div>
                                 </td>
                                 <td class="price">
@@ -169,14 +176,6 @@ include '../includes/header.php';
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-            </div>
-
-            <div class="cart-actions">
-                <form method="post" onsubmit="return confirm('Bạn có chắc chắn muốn làm trống giỏ hàng?');">
-                    <input type="hidden" name="action" value="clear">
-                    <button type="submit" class="clear-button">Làm trống giỏ hàng</button>
-                </form>
-                <a href="../index.php" class="button-keep-shopping">Tiếp tục mua sắm</a>
             </div>
 
             <div class="cart-summary">
@@ -242,6 +241,16 @@ include '../includes/header.php';
         gap: 20px;
     }
 
+    .cart-header-actions {
+        grid-column: 1 / 3;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #eee;
+    }
+
     .cart-items {
         grid-column: 1 / 3;
     }
@@ -285,18 +294,17 @@ include '../includes/header.php';
         cursor: pointer;
     }
 
-    .cart-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-    }
-
     .clear-button,
-    .button {
+    .button-keep-shopping {
         padding: 10px 20px;
-        border-radius: 4px;
+        border-radius: 5px;
         font-weight: 500;
         cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        border: none;
+        transition: all 0.3s ease;
     }
 
     .clear-button {
@@ -305,18 +313,19 @@ include '../includes/header.php';
         border: 1px solid #ddd;
     }
 
+    .clear-button:hover {
+        background-color: #e0e0e0;
+    }
+
     .button-keep-shopping {
         background-color: #CB0404;
-
         color: #fff;
-        border: 1px solid #333;
-        border-radius: 5px;
-        margin-top: 20px;
-        padding: 10px 20px;
+        border: 1px solid #CB0404;
+    }
 
-        font-weight: 500;
-        cursor: pointer;
-
+    .button-keep-shopping:hover {
+        background-color: #A00303;
+        border-color: #A00303;
     }
 
     .cart-summary {
@@ -356,6 +365,12 @@ include '../includes/header.php';
             grid-template-columns: 1fr;
         }
 
+        .cart-header-actions {
+            grid-column: 1;
+            flex-direction: column;
+            gap: 10px;
+        }
+
         .cart-items,
         .cart-summary {
             grid-column: 1;
@@ -373,3 +388,8 @@ include '../includes/header.php';
 </style>
 
 <?php include '../includes/footer.html'; ?>
+
+<?php
+// Include chat popup widget
+include '../chat/popup_chat/widget.php';
+?>
