@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 10, 2025 at 08:27 PM
+-- Generation Time: Jun 11, 2025 at 03:39 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -187,7 +187,9 @@ INSERT INTO `messages` (`id`, `conversation_id`, `sender_id`, `receiver_id`, `me
 (44, 2, 12, 1, 'andy is good', NULL, 1, '2025-06-09 01:43:38'),
 (45, 2, 1, 12, 'shut the fuck up', NULL, 1, '2025-06-09 01:43:57'),
 (46, 2, 12, 1, 'this is client', NULL, 1, '2025-06-09 01:44:25'),
-(47, 2, 12, 1, 'hello', NULL, 1, '2025-06-09 15:55:39');
+(47, 2, 12, 1, 'hello', NULL, 1, '2025-06-09 15:55:39'),
+(48, 3, 1, 13, '[Hình ảnh]', 'uploads/48.png', 0, '2025-06-11 03:30:23'),
+(49, 2, 12, 1, 'hello guys', 'uploads/49.jpg', 1, '2025-06-11 03:35:43');
 
 -- --------------------------------------------------------
 
@@ -201,8 +203,34 @@ CREATE TABLE `orders` (
   `order_date` datetime DEFAULT current_timestamp(),
   `status` enum('pending','confirmed','shipped','delivered','cancelled') DEFAULT 'pending',
   `total_amount` decimal(10,2) DEFAULT NULL,
-  `shipping_address` text DEFAULT NULL
+  `shipping_address` text DEFAULT NULL,
+  `customer_name` varchar(255) DEFAULT NULL,
+  `customer_email` varchar(255) DEFAULT NULL,
+  `customer_phone` varchar(20) DEFAULT NULL,
+  `customer_address` text DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT NULL,
+  `payment_status` enum('pending','completed','failed','cancelled','expired') DEFAULT 'pending',
+  `order_status` enum('pending','confirmed','processing','shipped','delivered','cancelled') DEFAULT 'pending',
+  `order_code` varchar(50) DEFAULT NULL,
+  `payment_link_id` varchar(255) DEFAULT NULL,
+  `paid_amount` decimal(10,2) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `order_date`, `status`, `total_amount`, `shipping_address`, `customer_name`, `customer_email`, `customer_phone`, `customer_address`, `payment_method`, `payment_status`, `order_status`, `order_code`, `payment_link_id`, `paid_amount`, `created_at`, `updated_at`) VALUES
+(1, 1, '2025-06-11 18:33:40', 'pending', 680000.00, '22a/6 Đ. Thống Nhất, Đông Hoà, Dĩ An, Bình Dương', NULL, NULL, NULL, NULL, NULL, 'pending', 'pending', NULL, NULL, NULL, '2025-06-11 18:37:29', '2025-06-11 18:37:29'),
+(2, 12, '2025-06-11 18:40:15', 'pending', 2175000.00, '22a/6 Đ. Thống Nhất, Đông Hoà, Dĩ An, Bình Dương', NULL, NULL, NULL, NULL, NULL, 'pending', 'pending', NULL, NULL, NULL, '2025-06-11 18:40:15', '2025-06-11 18:40:15'),
+(3, 12, '2025-06-11 18:43:53', 'pending', 2175000.00, '22a/6 Đ. Thống Nhất, Đông Hoà, Dĩ An, Bình Dương', NULL, NULL, NULL, NULL, NULL, 'pending', 'pending', NULL, NULL, NULL, '2025-06-11 18:43:53', '2025-06-11 18:43:53'),
+(4, 12, '2025-06-11 18:43:59', 'pending', 2175000.00, '22a/6 Đ. Thống Nhất, Đông Hoà, Dĩ An, Bình Dương', NULL, NULL, NULL, NULL, NULL, 'pending', 'pending', NULL, NULL, NULL, '2025-06-11 18:43:59', '2025-06-11 18:43:59'),
+(12, 12, '2025-06-11 18:55:38', 'pending', 2175000.00, NULL, 'Nguyên Võ', 'Nguyenvo10092004@gmail.com', '0915538518', '22a/6 Đ. Thống Nhất, Đông Hoà, Dĩ An, Bình Dương', 'payos', 'pending', 'pending', '1591250159', 'e7a42e96e25e4ff0bf92dfa2c4009a13', NULL, '2025-06-11 18:55:38', '2025-06-11 18:55:38'),
+(13, 12, '2025-06-11 19:01:28', 'pending', 2175000.00, NULL, 'Nguyên Võ', 'Nguyenvo10092004@gmail.com', '0915538518', '22a/6 Đ. Thống Nhất, Đông Hoà, Dĩ An, Bình Dương', 'payos', 'pending', 'pending', NULL, NULL, NULL, '2025-06-11 19:01:28', '2025-06-11 19:01:28'),
+(14, 12, '2025-06-11 19:04:02', 'pending', 2175000.00, NULL, 'Nguyên Võ', 'Nguyenvo10092004@gmail.com', '0915538518', '22a/6 Đ. Thống Nhất, Đông Hoà, Dĩ An, Bình Dương', 'payos', 'pending', 'pending', '1591753587', 'd271b94d24394c5ea8f800920e4752c2', NULL, '2025-06-11 19:04:02', '2025-06-11 19:04:02'),
+(15, 12, '2025-06-11 19:04:08', 'pending', 2175000.00, NULL, 'Nguyên Võ', 'Nguyenvo10092004@gmail.com', '0915538518', '22a/6 Đ. Thống Nhất, Đông Hoà, Dĩ An, Bình Dương', 'payos', 'pending', 'pending', '1591759472', '3f0a12b038804d24a7aa6408c6f5978a', NULL, '2025-06-11 19:04:08', '2025-06-11 19:04:08');
 
 -- --------------------------------------------------------
 
@@ -217,6 +245,41 @@ CREATE TABLE `order_items` (
   `quantity` int(11) NOT NULL,
   `price` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `variant_id`, `quantity`, `price`) VALUES
+(1, 1, 96, 1, 680000.00),
+(2, 2, 15, 1, 245000.00),
+(3, 2, 66, 1, 180000.00),
+(4, 2, 58, 1, 150000.00),
+(5, 2, 82, 8, 200000.00),
+(6, 3, 15, 1, 245000.00),
+(7, 3, 66, 1, 180000.00),
+(8, 3, 58, 1, 150000.00),
+(9, 3, 82, 8, 200000.00),
+(10, 4, 15, 1, 245000.00),
+(11, 4, 66, 1, 180000.00),
+(12, 4, 58, 1, 150000.00),
+(13, 4, 82, 8, 200000.00),
+(14, 12, 15, 1, 245000.00),
+(15, 12, 66, 1, 180000.00),
+(16, 12, 58, 1, 150000.00),
+(17, 12, 82, 8, 200000.00),
+(18, 13, 15, 1, 245000.00),
+(19, 13, 66, 1, 180000.00),
+(20, 13, 58, 1, 150000.00),
+(21, 13, 82, 8, 200000.00),
+(22, 14, 15, 1, 245000.00),
+(23, 14, 66, 1, 180000.00),
+(24, 14, 58, 1, 150000.00),
+(25, 14, 82, 8, 200000.00),
+(26, 15, 15, 1, 245000.00),
+(27, 15, 66, 1, 180000.00),
+(28, 15, 58, 1, 150000.00),
+(29, 15, 82, 8, 200000.00);
 
 -- --------------------------------------------------------
 
@@ -470,6 +533,7 @@ ALTER TABLE `messages`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `order_code` (`order_code`),
   ADD KEY `user_id` (`user_id`);
 
 --
@@ -539,19 +603,19 @@ ALTER TABLE `discounts`
 -- AUTO_INCREMENT for table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `products`
