@@ -92,6 +92,12 @@ class PayOSHandler
         try {
             $this->pdo->beginTransaction();
 
+            // Ensure all customer info values are strings
+            $customerName = is_string($customerInfo['name']) ? $customerInfo['name'] : '';
+            $customerEmail = is_string($customerInfo['email']) ? $customerInfo['email'] : '';
+            $customerPhone = is_string($customerInfo['phone']) ? $customerInfo['phone'] : '';
+            $customerAddress = is_string($customerInfo['address']) ? $customerInfo['address'] : '';
+
             // Insert order with new schema
             $stmt = $this->pdo->prepare("
                 INSERT INTO orders (
@@ -103,11 +109,11 @@ class PayOSHandler
 
             $stmt->execute([
                 $_SESSION['user_id'] ?? null,
-                $customerInfo['name'],
-                $customerInfo['email'],
-                $customerInfo['phone'],
-                $customerInfo['address'],
-                $total
+                $customerName,
+                $customerEmail,
+                $customerPhone,
+                $customerAddress,
+                (float)$total
             ]);
 
             $orderId = $this->pdo->lastInsertId();            // Insert order items with existing schema
@@ -120,9 +126,9 @@ class PayOSHandler
             foreach ($cartItems as $item) {
                 $stmt->execute([
                     $orderId,
-                    $item['variant_id'],
-                    $item['quantity'],
-                    $item['final_price']
+                    (int)($item['variant_id'] ?? 0),
+                    (int)($item['quantity'] ?? 1),
+                    (float)($item['final_price'] ?? 0)
                 ]);
             }
 
@@ -141,8 +147,11 @@ class PayOSHandler
         $formattedItems = [];
 
         foreach ($cartItems as $item) {
+            // Ensure we have a valid item name
+            $itemName = isset($item['name']) && is_string($item['name']) ? $item['name'] : 'Product';
+
             // Simplify item name to avoid encoding issues
-            $itemName = preg_replace('/[^\w\s-]/', '', $item['name']); // Remove special characters
+            $itemName = preg_replace('/[^\w\s-]/', '', $itemName); // Remove special characters
             if (strlen($itemName) > 50) {
                 $itemName = substr($itemName, 0, 47) . '...';
             }
@@ -150,15 +159,21 @@ class PayOSHandler
             // Add variant info if available
             if (!empty($item['variant_size']) || !empty($item['variant_color'])) {
                 $variants = [];
-                if (!empty($item['variant_size'])) $variants[] = $item['variant_size'];
-                if (!empty($item['variant_color'])) $variants[] = $item['variant_color'];
-                $itemName .= ' (' . implode(', ', $variants) . ')';
+                if (!empty($item['variant_size']) && is_string($item['variant_size'])) {
+                    $variants[] = $item['variant_size'];
+                }
+                if (!empty($item['variant_color']) && is_string($item['variant_color'])) {
+                    $variants[] = $item['variant_color'];
+                }
+                if (!empty($variants)) {
+                    $itemName .= ' (' . implode(', ', $variants) . ')';
+                }
             }
 
             $formattedItems[] = [
                 "name" => $itemName,
-                "quantity" => (int)$item['quantity'],
-                "price" => PayOSConfig::formatAmount($item['final_price'])
+                "quantity" => (int)($item['quantity'] ?? 1),
+                "price" => PayOSConfig::formatAmount($item['final_price'] ?? 0)
             ];
         }
 
@@ -193,28 +208,38 @@ class PayOSHandler
             ];
         }
     }
-
     /**
      * Handle payment webhook from PayOS
      */
-    public function handleWebhook($webhookData)
+    public function handleWebhook($webhookData, $signature = null)
     {
         try {
-            // Verify webhook signature
-            $signature = $_SERVER['HTTP_X_PAYOS_SIGNATURE'] ?? '';
+            // Get signature from parameter or header
+            if ($signature === null) {
+                $signature = $_SERVER['HTTP_X_PAYOS_SIGNATURE'] ?? '';
+            }
 
             if (!$this->verifyWebhookSignature($webhookData, $signature)) {
                 throw new Exception('Invalid webhook signature');
             }
 
-            $orderCode = $webhookData['data']['orderCode'];
-            $status = $webhookData['data']['status'];
-            $amount = $webhookData['data']['amount'];
+            // Safely extract data with type checking
+            $data = $webhookData['data'] ?? [];
+            $orderCode = isset($data['orderCode']) ? (string)$data['orderCode'] : '';
+            $status = isset($data['status']) ? (string)$data['status'] : '';
+            $amount = isset($data['amount']) ? (float)$data['amount'] : 0.0;
+
+            if (empty($orderCode)) {
+                throw new Exception('Missing order code in webhook data');
+            }
 
             // Update order status
             $this->updateOrderStatus($orderCode, $status, $amount);
 
-            return ['success' => true];
+            return [
+                'success' => true,
+                'order_code' => $orderCode
+            ];
         } catch (Exception $e) {
             error_log("PayOS Webhook Error: " . $e->getMessage());
             return ['success' => false, 'error' => $e->getMessage()];
@@ -229,7 +254,6 @@ class PayOSHandler
         $expectedSignature = hash_hmac('sha256', $dataStr, PayOSConfig::getChecksumKey());
         return hash_equals($expectedSignature, $signature);
     }
-
     /**
      * Update order status based on payment status
      */
@@ -237,6 +261,15 @@ class PayOSHandler
     {
         $orderStatus = 'pending';
         $paymentStatusDB = 'pending';
+
+        // Ensure orderCode is a string
+        $orderCode = is_array($orderCode) ? (string)($orderCode[0] ?? '') : (string)$orderCode;
+
+        // Ensure paymentStatus is a string
+        $paymentStatus = is_array($paymentStatus) ? (string)($paymentStatus[0] ?? '') : (string)$paymentStatus;
+
+        // Ensure amount is a numeric value
+        $amount = is_array($amount) ? (float)($amount[0] ?? 0) : (float)$amount;
 
         switch ($paymentStatus) {
             case 'PAID':
@@ -266,12 +299,19 @@ class PayOSHandler
             $this->clearUserCart($orderCode);
         }
     }
-
     /**
      * Clear user cart after successful payment
      */
     public function clearUserCart($orderCode)
     {
+        // Ensure orderCode is a string
+        $orderCode = is_array($orderCode) ? (string)($orderCode[0] ?? '') : (string)$orderCode;
+
+        if (empty($orderCode)) {
+            error_log("PayOS clearUserCart: Empty order code provided");
+            return;
+        }
+
         // Get user_id from order
         $stmt = $this->pdo->prepare("SELECT user_id FROM orders WHERE order_code = ?");
         $stmt->execute([$orderCode]);
@@ -285,6 +325,8 @@ class PayOSHandler
                 WHERE c.user_id = ?
             ");
             $clearStmt->execute([$order['user_id']]);
+
+            error_log("PayOS: Cleared cart for user " . $order['user_id'] . " after successful payment for order " . $orderCode);
         }
     }
 }

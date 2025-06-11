@@ -216,16 +216,17 @@ class PayOSConfig
     }
     /**
      * Create signature for PayOS API
-     */    public static function createSignature($data)
+     */
+    public static function createSignature($data)
     {
         // PayOS signature requires specific fields in specific order
         // Format: amount=$amount&cancelUrl=$cancelUrl&description=$description&orderCode=$orderCode&returnUrl=$returnUrl
         $signatureData = [
-            'amount' => $data['amount'],
-            'cancelUrl' => $data['cancelUrl'],
-            'description' => $data['description'],
-            'orderCode' => $data['orderCode'],
-            'returnUrl' => $data['returnUrl']
+            'amount' => (string)$data['amount'],
+            'cancelUrl' => (string)$data['cancelUrl'],
+            'description' => (string)$data['description'],
+            'orderCode' => (string)$data['orderCode'],
+            'returnUrl' => (string)$data['returnUrl']
         ];
 
         // Sort by key to ensure consistent ordering (already alphabetical)

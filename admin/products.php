@@ -73,10 +73,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }        // Add or update product in database
         if ($_POST['action'] === 'add') {
             // Insert product first to get the ID
-            $stmt = $pdo->prepare("INSERT INTO products (name, category, description, price, image, stock, brand, size, color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$name, $category, $description, $price, null, $stock, $brand, $size, $color]); // Set image to null initially
+            $stmt = $pdo->prepare("INSERT INTO products (name, category, description, price, image, brand) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$name, $category, $description, $price, null, $brand]); // Set image to null initially
 
             $new_product_id = $pdo->lastInsertId();
+
+            // Insert product variant
+            $variantStmt = $pdo->prepare("INSERT INTO product_variants (stock, size, color, product_id) VALUES (?, ?, ?, ?)");
+            $variantStmt->execute([$stock, $size, $color, $new_product_id]);
 
             // Now handle the image with the proper product ID
             if ($temp_image_path && file_exists($temp_image_path)) {
@@ -100,8 +104,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $message = 'Sản phẩm đã được thêm thành công.';
         } else {
-            $stmt = $pdo->prepare("UPDATE product_variants SET name = ?, category = ?, description = ?, price = ?, image = ?, stock = ?, brand = ?, size = ?, color = ? WHERE id = ?");
-            $stmt->execute([$name, $category, $description, $price, $image, $stock, $brand, $size, $color, $product_id]);
+            // Update existing product
+            $stmt = $pdo->prepare("UPDATE products SET name = ?, category = ?, description = ?, price = ?, image = ? WHERE id = ?");
+            $stmt->execute([$name, $category, $description, $price, $image, $product_id]);
+
+            // Insert new product variant
+            $stmt = $pdo->prepare("INSERT INTO product_variants (stock, size, color, product_id) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$stock, $size, $color, $product_id]);
             $message = 'Sản phẩm đã được cập nhật thành công.';
         }
     }    // Delete Product

@@ -44,10 +44,11 @@ try {
     }
 
     // Validate webhook signature (if PayOS provides signature verification)
-    $webhookSignature = $_SERVER['HTTP_X_PAYOS_SIGNATURE'] ?? '';
-
-    // Initialize PayOS handler
+    $webhookSignature = $_SERVER['HTTP_X_PAYOS_SIGNATURE'] ?? '';    // Initialize PayOS handler
     $payosHandler = new PayOSHandler($pdo);
+
+    // Add debugging log for webhook data structure
+    error_log("PayOS Webhook Data: " . json_encode($webhookData));
 
     // Process webhook
     $result = $payosHandler->handleWebhook($webhookData, $webhookSignature);
