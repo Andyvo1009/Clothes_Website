@@ -18,10 +18,10 @@ $logData = [
     'post' => $_POST
 ];
 
-// Create logs directory if it doesn't exist
-if (!is_dir(__DIR__ . '/logs')) {
-    mkdir(__DIR__ . '/logs', 0755, true);
-}
+// // Create logs directory if it doesn't exist
+// if (!is_dir(__DIR__ . '/logs')) {
+//     mkdir(__DIR__ . '/logs', 0755, true);
+// }
 
 file_put_contents($logFile, json_encode($logData, JSON_PRETTY_PRINT) . "\n\n", FILE_APPEND | LOCK_EX);
 

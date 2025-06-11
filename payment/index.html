@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment System UI - VPF Fashion</title>
+    <link rel="stylesheet" href="payment.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="payment-container">
+        <div class="payment-card">
+            <div class="payment-header">
+                <h1><i class="fas fa-credit-card"></i> Payment System UI</h1>
+                <p class="subtitle">VPF Fashion - HTML Templates</p>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+            
+            <!-- Checkout Template -->
+            <div class="checkout-section">
+                <h2 class="section-title">
+                    <i class="fas fa-shopping-cart"></i>
+                    Checkout Page
+                </h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    Trang thanh toán với form thông tin khách hàng và tóm tắt đơn hàng
+                </p>
+                <div style="margin-bottom: 15px;">
+                    <strong>Features:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px; color: #666;">
+                        <li>Order summary with product details</li>
+                        <li>Customer information form</li>
+                        <li>Real-time validation</li>
+                        <li>Responsive design</li>
+                        <li>Loading states</li>
+                    </ul>
+                </div>
+                <div class="action-buttons">
+                    <a href="checkout.html" class="btn-primary">
+                        <i class="fas fa-eye"></i> Xem Demo
+                    </a>
+                    <a href="checkout.php" class="btn-secondary">
+                        <i class="fas fa-code"></i> PHP Version
+                    </a>
+                </div>
+            </div>
+
+            <!-- Success Template -->
+            <div class="checkout-section">
+                <h2 class="section-title">
+                    <i class="fas fa-check-circle"></i>
+                    Success Page
+                </h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    Trang thông báo thanh toán thành công với chi tiết đơn hàng
+                </p>
+                <div style="margin-bottom: 15px;">
+                    <strong>Features:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px; color: #666;">
+                        <li>Success confirmation</li>
+                        <li>Order details display</li>
+                        <li>Customer information</li>
+                        <li>Print receipt function</li>
+                        <li>Auto-redirect options</li>
+                    </ul>
+                </div>
+                <div class="action-buttons">
+                    <a href="success.html" class="btn-primary">
+                        <i class="fas fa-eye"></i> Xem Demo
+                    </a>
+                    <a href="success.html?orderCode=123456" class="btn-secondary">
+                        <i class="fas fa-receipt"></i> With Order
+                    </a>
+                </div>
+            </div>
+
+            <!-- Cancel Template -->
+            <div class="checkout-section">
+                <h2 class="section-title">
+                    <i class="fas fa-times-circle"></i>
+                    Cancel Page
+                </h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    Trang thông báo thanh toán bị hủy với hướng dẫn và hỗ trợ
+                </p>
+                <div style="margin-bottom: 15px;">
+                    <strong>Features:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px; color: #666;">
+                        <li>Cancellation reasons</li>
+                        <li>Helpful suggestions</li>
+                        <li>Customer support info</li>
+                        <li>Retry options</li>
+                        <li>Auto-redirect countdown</li>
+                    </ul>
+                </div>
+                <div class="action-buttons">
+                    <a href="cancel.html" class="btn-primary">
+                        <i class="fas fa-eye"></i> Xem Demo
+                    </a>
+                    <a href="cancel.html?reason=expired" class="btn-secondary">
+                        <i class="fas fa-clock"></i> Expired
+                    </a>
+                </div>
+            </div>
+
+            <!-- Webhook Status -->
+            <div class="checkout-section">
+                <h2 class="section-title">
+                    <i class="fas fa-server"></i>
+                    Webhook Status
+                </h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    Trang hiển thị trạng thái xử lý webhook từ PayOS
+                </p>
+                <div style="margin-bottom: 15px;">
+                    <strong>Features:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px; color: #666;">
+                        <li>Processing visualization</li>
+                        <li>Step-by-step progress</li>
+                        <li>Error handling</li>
+                        <li>Auto-redirect</li>
+                        <li>Debugging support</li>
+                    </ul>
+                </div>
+                <div class="action-buttons">
+                    <a href="webhook_status.html" class="btn-primary">
+                        <i class="fas fa-eye"></i> Xem Demo
+                    </a>
+                    <a href="webhook_status.html?debug=error" class="btn-secondary">
+                        <i class="fas fa-bug"></i> Error Demo
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CSS File Info -->
+        <div class="checkout-section" style="margin-top: 30px;">
+            <h2 class="section-title">
+                <i class="fas fa-palette"></i>
+                CSS Stylesheet
+            </h2>
+            <p style="margin-bottom: 20px; color: #666;">
+                Tất cả các template sử dụng chung file CSS với thiết kế responsive và modern
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div>
+                    <h4 style="color: #333; margin-bottom: 10px;">
+                        <i class="fas fa-file-code"></i> File CSS
+                    </h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 5px 0;"><strong>payment.css</strong> - Main stylesheet</li>
+                        <li style="padding: 5px 0;">✓ Responsive design</li>
+                        <li style="padding: 5px 0;">✓ Modern gradients</li>
+                        <li style="padding: 5px 0;">✓ Smooth animations</li>
+                        <li style="padding: 5px 0;">✓ Print-friendly</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="color: #333; margin-bottom: 10px;">
+                        <i class="fas fa-mobile-alt"></i> Responsive Features
+                    </h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 5px 0;">📱 Mobile-first design</li>
+                        <li style="padding: 5px 0;">💻 Tablet optimized</li>
+                        <li style="padding: 5px 0;">🖥️ Desktop layouts</li>
+                        <li style="padding: 5px 0;">🎨 Consistent styling</li>
+                        <li style="padding: 5px 0;">⚡ Fast loading</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="action-buttons" style="margin-top: 20px;">
+                <a href="payment.css" class="btn-primary" target="_blank">
+                    <i class="fas fa-download"></i> Download CSS
+                </a>
+                <button onclick="showCSSInfo()" class="btn-secondary">
+                    <i class="fas fa-info-circle"></i> CSS Details
+                </button>
+            </div>
+        </div>
+
+        <!-- Usage Instructions -->
+        <div class="checkout-section" style="margin-top: 30px;">
+            <h2 class="section-title">
+                <i class="fas fa-book"></i>
+                Usage Instructions
+            </h2>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: #333; margin-bottom: 15px;">How to Use These Templates:</h4>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong>1. Copy HTML Templates:</strong>
+                    <pre style="background: #fff; padding: 10px; border-radius: 4px; margin: 10px 0; overflow-x: auto;"><code>checkout.html    → Checkout page template
+success.html     → Success page template  
+cancel.html      → Cancel page template
+webhook_status.html → Webhook status page</code></pre>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <strong>2. Include CSS File:</strong>
+                    <pre style="background: #fff; padding: 10px; border-radius: 4px; margin: 10px 0; overflow-x: auto;"><code>&lt;link rel="stylesheet" href="payment.css"&gt;</code></pre>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <strong>3. Customize for Your Needs:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Replace placeholder content with dynamic PHP data</li>
+                        <li>Update URLs and form actions</li>
+                        <li>Modify colors and branding in CSS</li>
+                        <li>Add your logo and company information</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <strong>4. Integration with PHP:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Use PHP includes for dynamic content</li>
+                        <li>Replace hardcoded values with PHP variables</li>
+                        <li>Add server-side validation</li>
+                        <li>Connect to your database</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="alert alert-success">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Pro Tips:</strong>
+                <br>• Test all templates on different devices and browsers
+                <br>• Customize colors to match your brand
+                <br>• Add your own JavaScript for enhanced functionality
+                <br>• Use these as base templates for other payment systems
+            </div>
+        </div>
+
+        <!-- Back to Main Site -->
+        <div class="action-buttons" style="margin-top: 30px;">
+            <a href="../index.php" class="btn-primary">
+                <i class="fas fa-home"></i>
+                Back to VPF Fashion
+            </a>
+            <a href="../cart/index.php" class="btn-secondary">
+                <i class="fas fa-shopping-cart"></i>
+                Go to Cart
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function showCSSInfo() {
+            const cssInfo = `
+CSS Structure:
+- Common styles for all payment pages
+- Responsive grid layouts
+- Modern color scheme with gradients
+- Smooth hover effects and transitions
+- Print-friendly styles
+- Mobile-first approach
+- Consistent button styling
+- Form validation styling
+- Loading states and animations
+- Alert and notification styles
+
+Color Palette:
+- Primary: #dc3545 (Red)
+- Secondary: #6c757d (Gray)
+- Success: #28a745 (Green)
+- Warning: #ffc107 (Yellow)
+- Info: #007bff (Blue)
+- Background: Linear gradients
+
+Typography:
+- Font Family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif
+- Responsive font sizes
+- Proper line heights
+- Consistent spacing
+            `;
+            
+            alert(cssInfo);
+        }
+
+        // Add some interactive demonstrations
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Payment UI Templates loaded successfully!');
+            
+            // Add click tracking for demo purposes
+            const demoLinks = document.querySelectorAll('a[href$=".html"]');
+            demoLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    console.log('Demo link clicked:', this.href);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

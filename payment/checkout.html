@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán - VPF Fashion</title>
+    <link rel="stylesheet" href="payment.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="payment-container">
+        <!-- Back to Cart Button -->
+        <a href="../cart/index.php" class="back-to-cart">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại giỏ hàng
+        </a>
+
+        <!-- Payment Header -->
+        <div class="payment-card">
+            <div class="payment-header">
+                <h1><i class="fas fa-credit-card"></i> Thanh Toán</h1>
+                <p class="subtitle">Hoàn tất đơn hàng của bạn</p>
+            </div>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div id="message-container">
+            <!-- Error Message -->
+            <div class="alert alert-danger" id="error-message" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="error-text"></span>
+            </div>
+
+            <!-- Success Message -->
+            <div class="alert alert-success" id="success-message" style="display: none;">
+                <i class="fas fa-check-circle"></i>
+                <span id="success-text"></span>
+            </div>
+        </div>
+
+        <!-- Checkout Form -->
+        <div class="checkout-container">
+            <!-- Order Summary -->
+            <div class="checkout-section">
+                <h2 class="section-title">
+                    <i class="fas fa-shopping-bag"></i>
+                    Tóm Tắt Đơn Hàng
+                </h2>
+                
+                <div class="order-summary" id="order-summary">
+                    <!-- Order items will be loaded here -->
+                    <div class="order-item">
+                        <img src="../assets/images/placeholder.jpg" alt="Product" class="item-image">
+                        <div class="item-details">
+                            <div class="item-name">Áo thun basic</div>
+                            <div class="item-variant">Size: M | Màu: Đen</div>
+                            <div class="item-pricing">
+                                <span>Số lượng: 2</span>
+                                <div>
+                                    <span class="original-price">400.000đ</span>
+                                    <span class="discounted-price">350.000đ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-item">
+                        <div class="item-image">
+                            <i class="fas fa-image" style="color: #ccc;"></i>
+                        </div>
+                        <div class="item-details">
+                            <div class="item-name">Quần jeans slim fit</div>
+                            <div class="item-variant">Size: 30</div>
+                            <div class="item-pricing">
+                                <span>Số lượng: 1</span>
+                                <div>
+                                    <span class="discounted-price">590.000đ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pricing-summary">
+                    <div class="pricing-row">
+                        <span>Tạm tính:</span>
+                        <span id="subtotal">990.000đ</span>
+                    </div>
+                    <div class="pricing-row">
+                        <span>Giảm giá:</span>
+                        <span id="discount" style="color: #28a745;">-50.000đ</span>
+                    </div>
+                    <div class="pricing-row">
+                        <span>Phí vận chuyển:</span>
+                        <span id="shipping">Miễn phí</span>
+                    </div>
+                    <div class="pricing-row total">
+                        <span>Tổng cộng:</span>
+                        <span id="total">940.000đ</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Information -->
+            <div class="checkout-section">
+                <h2 class="section-title">
+                    <i class="fas fa-truck"></i>
+                    Thông Tin Giao Hàng
+                </h2>
+                
+                <form id="checkout-form" method="POST" action="checkout.php">
+                    <div class="form-group">
+                        <label for="customer_name">
+                            Họ và tên <span class="required">*</span>
+                        </label>
+                        <input type="text" 
+                               id="customer_name" 
+                               name="customer_name" 
+                               required 
+                               placeholder="Nhập họ và tên đầy đủ">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer_email">
+                            Email <span class="required">*</span>
+                        </label>
+                        <input type="email" 
+                               id="customer_email" 
+                               name="customer_email" 
+                               required 
+                               placeholder="example@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer_phone">
+                            Số điện thoại <span class="required">*</span>
+                        </label>
+                        <input type="tel" 
+                               id="customer_phone" 
+                               name="customer_phone" 
+                               required 
+                               placeholder="0123456789">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer_address">
+                            Địa chỉ giao hàng <span class="required">*</span>
+                        </label>
+                        <textarea id="customer_address" 
+                                  name="customer_address" 
+                                  required 
+                                  rows="3" 
+                                  placeholder="Nhập địa chỉ giao hàng chi tiết"></textarea>
+                    </div>
+
+                    <button type="submit" class="checkout-btn" id="checkout-submit">
+                        <i class="fas fa-credit-card"></i>
+                        Thanh Toán với PayOS
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form submission handling
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('checkout-submit');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<span class="loading"></span>Đang xử lý...';
+            submitBtn.disabled = true;
+            
+            // Reset after a delay if form submission fails
+            setTimeout(() => {
+                if (submitBtn.disabled) {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            }, 10000);
+        });
+
+        // Show/hide messages
+        function showMessage(type, message) {
+            const errorDiv = document.getElementById('error-message');
+            const successDiv = document.getElementById('success-message');
+            
+            // Hide all messages first
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            if (type === 'error') {
+                document.getElementById('error-text').textContent = message;
+                errorDiv.style.display = 'block';
+            } else if (type === 'success') {
+                document.getElementById('success-text').textContent = message;
+                successDiv.style.display = 'block';
+            }
+            
+            // Scroll to message
+            document.getElementById('message-container').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+        }
+
+        // Phone number formatting
+        document.getElementById('customer_phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 10) value = value.slice(0, 10);
+            e.target.value = value;
+        });
+
+        // Form validation
+        function validateForm() {
+            const name = document.getElementById('customer_name').value.trim();
+            const email = document.getElementById('customer_email').value.trim();
+            const phone = document.getElementById('customer_phone').value.trim();
+            const address = document.getElementById('customer_address').value.trim();
+            
+            if (!name || !email || !phone || !address) {
+                showMessage('error', 'Vui lòng điền đầy đủ thông tin giao hàng');
+                return false;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showMessage('error', 'Email không hợp lệ');
+                return false;
+            }
+            
+            if (phone.length < 10) {
+                showMessage('error', 'Số điện thoại không hợp lệ');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Add validation to form submission
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

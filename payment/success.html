@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán Thành Công - VPF Fashion</title>
+    <link rel="stylesheet" href="payment.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="payment-container">
+        <div class="payment-result">
+            <!-- Success State -->
+            <div id="success-state">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h1 class="result-title">Thanh Toán Thành Công!</h1>
+                <p class="result-message">
+                    Cảm ơn bạn đã mua hàng tại VPF Fashion. 
+                    Đơn hàng của bạn đã được xác nhận và sẽ được xử lý trong thời gian sớm nhất.
+                </p>
+
+                <div class="order-details">
+                    <h3><i class="fas fa-receipt"></i> Chi Tiết Đơn Hàng</h3>
+                    
+                    <div class="order-info">
+                        <div class="info-item">
+                            <span class="info-label">Mã đơn hàng:</span>
+                            <span class="info-value" id="order-code">#VPF123456</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Ngày đặt:</span>
+                            <span class="info-value" id="order-date">11/06/2025</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Tổng tiền:</span>
+                            <span class="info-value" id="order-total">940.000đ</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Phương thức:</span>
+                            <span class="info-value">PayOS</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Trạng thái:</span>
+                            <span class="info-value" style="color: #28a745; font-weight: bold;">
+                                <i class="fas fa-check"></i> Đã thanh toán
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Số lượng:</span>
+                            <span class="info-value" id="item-count">3 sản phẩm</span>
+                        </div>
+                    </div>
+
+                    <div class="info-item" style="border-top: 2px solid #dee2e6; padding-top: 15px; margin-top: 15px;">
+                        <span class="info-label">Khách hàng:</span>
+                        <span class="info-value" id="customer-name">Nguyễn Văn A</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value" id="customer-email">customer@email.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Số điện thoại:</span>
+                        <span class="info-value" id="customer-phone">0123456789</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-success">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Thông tin quan trọng:</strong>
+                    <br>• Email xác nhận đã được gửi đến địa chỉ email của bạn
+                    <br>• Đơn hàng sẽ được xử lý trong 1-2 ngày làm việc
+                    <br>• Bạn có thể theo dõi trạng thái đơn hàng trong tài khoản của mình
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" style="display: none;">
+                <div class="error-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <h1 class="result-title">Thanh Toán Thất Bại</h1>
+                <p class="result-message" id="error-message">
+                    Rất tiếc, đã có lỗi xảy ra trong quá trình thanh toán. 
+                    Vui lòng thử lại hoặc liên hệ với chúng tôi để được hỗ trợ.
+                </p>
+
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Lưu ý:</strong> Không có khoản tiền nào được trừ từ tài khoản của bạn.
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" style="display: none;">
+                <div class="loading" style="width: 40px; height: 40px; margin: 20px auto;"></div>
+                <h1 class="result-title">Đang xác minh thanh toán...</h1>
+                <p class="result-message">
+                    Vui lòng đợi trong giây lát, chúng tôi đang xác minh trạng thái thanh toán của bạn.
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="../index.php" class="btn-primary">
+                    <i class="fas fa-home"></i>
+                    Về Trang Chủ
+                </a>                <a href="../profile/index.php" class="btn-secondary">
+                    <i class="fas fa-user"></i>
+                    Hồ Sơ & Đơn Hàng
+                </a>
+                <a href="../orders/history.php" class="btn-secondary">
+                    <i class="fas fa-history"></i>
+                    Lịch Sử Đơn Hàng
+                </a>
+                <a href="../cart/index.php" class="btn-secondary">
+                    <i class="fas fa-shopping-cart"></i>
+                    Tiếp Tục Mua Sắm
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                orderCode: params.get('orderCode'),
+                status: params.get('status'),
+                error: params.get('error')
+            };
+        }
+
+        // Show different states based on URL parameters
+        function displayResult() {
+            const params = getUrlParams();
+            const successState = document.getElementById('success-state');
+            const errorState = document.getElementById('error-state');
+            const loadingState = document.getElementById('loading-state');
+
+            if (params.error) {
+                // Show error state
+                successState.style.display = 'none';
+                errorState.style.display = 'block';
+                loadingState.style.display = 'none';
+                
+                document.getElementById('error-message').textContent = params.error;
+                document.title = 'Thanh Toán Thất Bại - VPF Fashion';
+            } else if (params.orderCode) {
+                // Show success state with order details
+                successState.style.display = 'block';
+                errorState.style.display = 'none';
+                loadingState.style.display = 'none';
+                
+                // Update order code if available
+                if (params.orderCode) {
+                    document.getElementById('order-code').textContent = '#' + params.orderCode;
+                }
+            } else {
+                // Show loading state by default
+                successState.style.display = 'none';
+                errorState.style.display = 'none';
+                loadingState.style.display = 'block';
+                
+                // Redirect to cart after 5 seconds if no parameters
+                setTimeout(() => {
+                    window.location.href = '../cart/index.php';
+                }, 5000);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', displayResult);
+
+        // Auto-redirect to order tracking after successful payment
+        function autoRedirect() {
+            const params = getUrlParams();
+            if (params.orderCode && !params.error) {
+                // Optional: Auto-redirect to profile page after 10 seconds
+                setTimeout(() => {
+                    const redirectBtn = document.createElement('div');
+                    redirectBtn.className = 'alert alert-warning';
+                    redirectBtn.innerHTML = `
+                        <i class="fas fa-clock"></i>
+                        Bạn sẽ được chuyển đến trang đơn hàng trong <span id="countdown">10</span> giây...
+                        <button onclick="clearInterval(countdownInterval)" style="float: right; background: none; border: none; color: #856404;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    document.querySelector('.order-details').after(redirectBtn);
+                    
+                    let countdown = 10;
+                    const countdownEl = document.getElementById('countdown');
+                    
+                    window.countdownInterval = setInterval(() => {
+                        countdown--;
+                        if (countdownEl) countdownEl.textContent = countdown;
+                        
+                        if (countdown <= 0) {
+                            window.location.href = '../profile/index.php';
+                        }
+                    }, 1000);
+                }, 5000);
+            }
+        }
+
+        // Start auto-redirect
+        setTimeout(autoRedirect, 2000);
+
+        // Print functionality
+        function printReceipt() {
+            window.print();
+        }
+
+        // Add print button to success state
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = getUrlParams();
+            if (params.orderCode && !params.error) {
+                const printBtn = document.createElement('button');
+                printBtn.className = 'btn-secondary';
+                printBtn.innerHTML = '<i class="fas fa-print"></i> In Hóa Đơn';
+                printBtn.onclick = printReceipt;
+                
+                document.querySelector('.action-buttons').appendChild(printBtn);
+            }
+        });
+    </script>
+</body>
+</html>

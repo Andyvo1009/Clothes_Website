@@ -22,6 +22,26 @@ if (!$user) {
 $join_date = new DateTime($user['timestamp']);
 $formatted_date = $join_date->format('d/m/Y');
 
+// Get user's recent orders for order history section
+$ordersStmt = $pdo->prepare("
+    SELECT o.*, 
+           COUNT(oi.id) as item_count,
+           SUM(oi.quantity) as total_quantity
+    FROM orders o 
+    LEFT JOIN order_items oi ON o.id = oi.order_id 
+    WHERE o.user_id = ?
+    GROUP BY o.id 
+    ORDER BY o.created_at DESC 
+    LIMIT 5
+");
+$ordersStmt->execute([$user_id]);
+$recentOrders = $ordersStmt->fetchAll();
+
+// Get total orders count
+$totalOrdersStmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE user_id = ?");
+$totalOrdersStmt->execute([$user_id]);
+$totalOrdersCount = $totalOrdersStmt->fetchColumn();
+
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -117,6 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hồ Sơ Cá Nhân - VPF Fashion</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         .profile-container {
             max-width: 800px;
@@ -306,6 +327,198 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .back-link:hover {
             text-decoration: underline;
         }
+
+        /* Order History Section Styles */
+        .order-history-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #dc3545 0%, #ff6b7a 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .view-all-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .view-all-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .empty-orders {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-orders i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .empty-orders h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .empty-orders p {
+            margin-bottom: 20px;
+        }
+
+        .orders-grid {
+            display: grid;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .order-item {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow 0.3s;
+        }
+
+        .order-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .order-info h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .order-date {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-processing {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-shipped {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .order-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .order-amount {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .order-items {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #dc3545;
+            border: 2px solid #dc3545;
+        }
+
+        .btn-outline:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .section-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .order-details {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .order-actions {
+                justify-content: stretch;
+            }
+
+            .order-actions .btn {
+                flex: 1;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 
@@ -324,7 +537,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <?php if (!empty($error)): ?>
             <div class="message error"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
+        <?php endif; ?> <!-- Order History Section -->
+        <div class="order-history-section">
+            <div class="section-header">
+                <h2><i class="fas fa-shopping-bag"></i> Lịch Sử Đơn Hàng</h2>
+                <a href="../orders/history.php" class="view-all-btn">Xem tất cả (<?= $totalOrdersCount ?>)</a>
+            </div>
+
+            <?php if (empty($recentOrders)): ?>
+                <div class="empty-orders">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3>Chưa có đơn hàng nào</h3>
+                    <p>Bạn chưa thực hiện đơn hàng nào. Hãy khám phá các sản phẩm của chúng tôi!</p>
+                    <a href="../index.php" class="btn btn-primary">Mua sắm ngay</a>
+                </div>
+            <?php else: ?>
+                <div class="orders-grid">
+                    <?php foreach ($recentOrders as $order): ?>
+                        <div class="order-item">
+                            <div class="order-header">
+                                <div class="order-info">
+                                    <h4>#<?= htmlspecialchars($order['order_code'] ?? 'ORD-' . $order['id']) ?></h4>
+                                    <span class="order-date"><?= date('d/m/Y', strtotime($order['created_at'])) ?></span>
+                                </div>
+                                <div class="order-status">
+                                    <span class="status-badge status-<?= $order['order_status'] ?>">
+                                        <?= ucfirst($order['order_status']) ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="order-details">
+                                <div class="order-amount"><?= number_format($order['total_amount'], 0, ',', '.') ?>đ</div>
+                                <div class="order-items"><?= $order['item_count'] ?> sản phẩm</div>
+                            </div>
+                            <div class="order-actions">
+                                <a href="../orders/detail.php?id=<?= $order['id'] ?>" class="btn btn-outline">Chi tiết</a>
+                                <?php if ($order['order_status'] === 'delivered'): ?>
+                                    <a href="../orders/reorder.php?id=<?= $order['id'] ?>" class="btn btn-primary">Mua lại</a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
 
         <form method="POST" class="profile-form">
             <!-- Account Information -->
