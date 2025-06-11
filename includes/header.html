@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>VPF Fashion - Thời trang Việt Nam</title>
-    <link rel="stylesheet" href="/FirstWebsite/assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
@@ -13,37 +13,37 @@
     <header>
         <div class="header-container">
             <div class="logo">
-                <a href="/FirstWebsite/index.php">
+                <a href="../index.php">
                     <h1 style="color: #c62828; font-size: 1.8rem;">VPF FASHION</h1>
                 </a>
             </div>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="/FirstWebsite/index.php" class="active">Home</a></li>
-                    <li><a href="/FirstWebsite/index.php?category=do-nam">Đồ Nam</a></li>
-                    <li><a href="/FirstWebsite/index.php?category=do-nu">Đồ Nữ</a></li>
-                    <li><a href="/FirstWebsite/index.php?category=do-be-trai">Đồ Bé Trai</a></li>
-                    <li><a href="/FirstWebsite/index.php?category=do-be-gai">Đồ Bé Gái</a></li>
+                    <li><a href="../index.php" class="active">Home</a></li>
+                    <li><a href="../index.php?category=do-nam">Đồ Nam</a></li>
+                    <li><a href="../index.php?category=do-nu">Đồ Nữ</a></li>
+                    <li><a href="../index.php?category=do-be-trai">Đồ Bé Trai</a></li>
+                    <li><a href="../index.php?category=do-be-gai">Đồ Bé Gái</a></li>
                 </ul>
             </nav>
-            <form class="search-bar" method="get" action="/FirstWebsite/index.php">
+            <form class="search-bar" method="get" action="../index.php">
                 <input type="text" name="search" placeholder="Tìm kiếm Tên gì...">
                 <button type="submit" name="submiter">Tìm kiếm</button>
             </form>            <div class="user-actions">
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
-                        <a href="/FirstWebsite/admin/products.php" class="icon-link" title="Admin Panel"><i class="fas fa-cog"></i></a>
-                        <a href="/FirstWebsite/chat/admin.php" class="icon-link" title="Chat Admin"><i class="fas fa-comments"></i></a>
+                        <a href="../admin/products.php" class="icon-link" title="Admin Panel"><i class="fas fa-cog"></i></a>
+                        <a href="../chat/admin.php" class="icon-link" title="Chat Admin"><i class="fas fa-comments"></i></a>
                     <?php else: ?>
-                        <a href="/FirstWebsite/chat/client.php" class="icon-link" title="Hỗ trợ khách hàng"><i class="fas fa-headset"></i></a>
+                        <a href="../chat/client.php" class="icon-link" title="Hỗ trợ khách hàng"><i class="fas fa-headset"></i></a>
                     <?php endif; ?>
                     <span class="user-greeting">Xin chào, <?= htmlspecialchars($_SESSION['email']) ?></span>
-                    <a href="/FirstWebsite/auth/logout.php" class="icon-link" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
+                    <a href="../auth/logout.php" class="icon-link" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
                 <?php else: ?>
-                    <a href="/FirstWebsite/auth/login.php" class="icon-link" title="Đăng nhập"><i class="fas fa-sign-in-alt"></i></a>
-                    <a href="/FirstWebsite/auth/register.php" class="icon-link" title="Đăng ký"><i class="fas fa-user-plus"></i></a>
+                    <a href="../auth/login.php" class="icon-link" title="Đăng nhập"><i class="fas fa-sign-in-alt"></i></a>
+                    <a href="../auth/register.php" class="icon-link" title="Đăng ký"><i class="fas fa-user-plus"></i></a>
                 <?php endif; ?>
-                <a href="/FirstWebsite/cart/index.php" class="icon-link cart-icon">
+                <a href="../cart/index.php" class="icon-link cart-icon">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count" id="cart-count">0</span>
                 </a>
@@ -56,7 +56,7 @@
         
         // Function to fetch cart count
         function fetchCartCount() {
-            fetch('/FirstWebsite/cart/count.php')
+            fetch('../cart/count.php')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {

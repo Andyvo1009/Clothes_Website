@@ -136,8 +136,6 @@ $conversations = getAdminConversations($pdo, $userId);
             background: #f8f9fa;
         }
 
-        background: #f8f9fa;
-        }
 
         .conversations-panel {
             width: 350px;

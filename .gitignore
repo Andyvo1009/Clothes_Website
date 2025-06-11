@@ -4,8 +4,12 @@ create_products_table.php
 # Composer dependencies
 chat/vendor/
 vendor/
-
-
+#docker files
+docker-compose.yml
+docker-compose.prod.yml
+Dockerfile
+docker/
+includes/db_docker.php
 #sql file
 first_web(3).sql
 # Environment files

@@ -391,5 +391,5 @@ include '../includes/header.php';
 
 <?php
 // Include chat popup widget
-include '../chat/popup_chat/widget.php';
+// include '../chat/popup_chat/widget.php';
 ?>

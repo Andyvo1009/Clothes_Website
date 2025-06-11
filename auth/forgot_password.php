@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             try {
                 // Check if email exists in database (username field stores email)
-                $stmt = $pdo->prepare("SELECT id, username FROM users WHERE username = ?");
+                $stmt = $pdo->prepare("SELECT id, email FROM users WHERE email = ?");
                 $stmt->execute([$email]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 

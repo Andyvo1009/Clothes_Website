@@ -1,26 +1,16 @@
 <?php
-// Database configuration
-$db_host = 'localhost';
-$db_name = 'first_web';
-$db_user = 'root';
-$db_pass = '';
-$dsn = "mysql:host={$db_host};dbname={$db_name};charset=utf8mb4";
-
-// PDO options for better error handling and security
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES => false,
-];
+// includes/db.php
+// Use environment variables from Docker, with fallbacks for local development
+$host = getenv('DB_HOST') ?: 'localhost';
+$dbname = getenv('DB_NAME') ?: 'first_web';
+$username = getenv('DB_USER') ?: 'root';
+$password = getenv('DB_PASS') ?: '';
 
 try {
-    // Create PDO instance
-    $pdo = new PDO($dsn, $db_user, $db_pass, $options);
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    // Log error (to a file in a real application)
-    error_log("Database Connection Error: " . $e->getMessage());
-    
-    // Show generic error message to user
-    die("Sorry, there was a problem connecting to the database. Please try again later.");
+    error_log("Database connection failed: " . $e->getMessage());
+    die("Database Connection Error: " . $e->getMessage());
 }
-?>
