@@ -198,7 +198,9 @@ include '../includes/header.php';
                     <span>Tổng tiền:</span>
                     <span class="total-price"><?= number_format($cartSummary['total'], 0, ',', '.') ?>đ</span>
                 </div>
-                <a href="../checkout.php" class="checkout-button">Tiến hành thanh toán</a>
+                <a href="../payment/checkout.php" class="checkout-button">
+                    <i class="fas fa-credit-card"></i> Thanh toán với PayOS
+                </a>
             </div>
         </div>
     <?php endif; ?>
